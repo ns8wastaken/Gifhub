@@ -13,11 +13,12 @@ public:
 
     void update(const float& frameTime);
 
-    const std::vector<Image>& getImages();
+    const std::vector<Texture>& getImages();
     const std::vector<Gif>& getGifs();
 
 private:
     uint64_t librarySize = 0ULL;
-    std::vector<Image> imgs = {};
-    std::vector<Gif> gifs   = {};
+
+    std::vector<Texture> imgs = {};
+    std::vector<Gif> gifs     = {};
 };

@@ -1,31 +1,29 @@
 #include <raylib.h>
-#include "gif.hpp"
+#include "library.cpp"
 
 
 int main()
 {
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 800, "Gifhub");
 
-    Image image       = LoadImage("img.png");
-    Texture2D chicken = LoadTextureFromImage(image);
-    UnloadImage(image);
+    Library library;
+    library.addImage("library/img.png");
+    library.addGif("library/g.gif");
 
-    Gif gif = Gif("g.gif", 42);
-
-    float frameTime = GetFrameTime();
-
+    float frameTime = 0.0f;
     while (!WindowShouldClose()) {
         frameTime = GetFrameTime();
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        DrawTexture(chicken, 0, 0, WHITE);
-        DrawTexture(gif.texture, 0, 300, WHITE);
+        DrawTexture(library.getImages()[0], 0, 0, WHITE);
+        DrawTexture(library.getGifs()[0].texture, 0, 200, WHITE);
 
         EndDrawing();
 
-        gif.update(frameTime);
+        library.update(frameTime);
     }
 
     CloseWindow();
