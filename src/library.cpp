@@ -13,6 +13,7 @@ void Library::addImage(const char* fileName)
     ++librarySize;
 
     Image image = LoadImage(fileName);
+    Utils::ClampImageSize(&image);
     imgs.push_back(LoadTextureFromImage(image));
     UnloadImage(image);
 }

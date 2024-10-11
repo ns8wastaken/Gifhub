@@ -1,5 +1,6 @@
 #pragma once
 #include <raylib.h>
+#include "utils.hpp"
 
 
 struct Gif
@@ -18,7 +19,7 @@ struct Gif
 
     void update(const float& frameTime)
     {
-        delayCount += frameTime * 1000;
+        delayCount += frameTime * 1000.0f;
 
         if (delayCount > delay) {
             delayCount   = 0;
