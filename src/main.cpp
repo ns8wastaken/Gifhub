@@ -25,7 +25,7 @@ int main()
     library.addImage("library/p.png");
     library.addGif("library/g.gif");
 
-    Vector2 screenSize = {
+    float screenSize[2] = {
         static_cast<float>(GetScreenWidth()),
         static_cast<float>(GetScreenHeight())
     };
@@ -35,12 +35,22 @@ int main()
     const int screenResolutionLoc = GetShaderLocation(shader, "screenResolution");
 
     // Generate blank texture for shader
-    Image imBlank        = GenImageColor(Settings::MAX_IMAGE_WIDTH, Settings::MAX_IMAGE_HEIGHT, BLANK);
+    Image imBlank        = GenImageColor(screenSize[0], screenSize[1], BLANK);
     Texture textureBlank = LoadTextureFromImage(imBlank);
     UnloadImage(imBlank);
 
     float frameTime = 0.0f;
     while (!WindowShouldClose()) {
+        if (IsWindowResized()) {
+            screenSize[0] = static_cast<float>(GetScreenWidth());
+            screenSize[1] = static_cast<float>(GetScreenHeight());
+
+            Image imBlank = GenImageColor(screenSize[0], screenSize[1], BLANK);
+            textureBlank  = LoadTextureFromImage(imBlank);
+            UnloadImage(imBlank);
+        }
+
+        // Set shader values
         SetShaderValue(shader, screenResolutionLoc, &screenSize, SHADER_UNIFORM_VEC2);
 
         frameTime = GetFrameTime();
@@ -57,7 +67,7 @@ int main()
 
             BeginShaderMode(shader);
             {
-                DrawTexture(textureBlank, 300, 100, RED);
+                DrawTexture(textureBlank, 0, 0, RED);
             }
             EndShaderMode();
         }
