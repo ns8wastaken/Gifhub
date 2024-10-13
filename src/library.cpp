@@ -1,39 +1,54 @@
 #include "library.hpp"
 
 
-void Library::addGif(const char* fileName, const float gifDelay = 42.0f)
-{
-    ++librarySize;
-    gifs.push_back(Gif(fileName, gifDelay));
-}
-
-
-void Library::addImage(const char* fileName)
+void Library::add(const std::string& fileName)
 {
     ++librarySize;
 
-    Image image = LoadImage(fileName);
+    Image image = LoadImage(fileName.c_str());
     Utils::ClampImageSize(&image);
-    imgs.push_back(LoadTextureFromImage(image));
+
+    if (fileName.ends_with(".gif")) {
+        items.push_back(Item{
+            .media   = {.gif = Gif(fileName.c_str())},
+            .isGif   = true,
+            .size    = {static_cast<float>(image.width), static_cast<float>(image.height)},
+            .texture = LoadTextureFromImage(image)
+        });
+    }
+    else {
+        items.push_back(Item{
+            .media   = {.img = image},
+            .isGif   = false,
+            .size    = {static_cast<float>(image.width), static_cast<float>(image.height)},
+            .texture = LoadTextureFromImage(image)
+        });
+    }
+
     UnloadImage(image);
 }
 
 
 void Library::update(const float& frameTime)
 {
-    for (Gif& gif : gifs) {
-        gif.update(frameTime);
+    for (Item& item : items) {
+        // Update gif frame
+        if (item.isGif) {
+            item.media.gif.update(frameTime, item.texture);
+        }
     }
 }
 
 
-const std::vector<Texture>& Library::getImages()
+const std::vector<Library::Item>& Library::getItems()
 {
-    return imgs;
+    return items;
 }
 
 
-const std::vector<Gif>& Library::getGifs()
+Library::~Library()
 {
-    return gifs;
+    // for (Item& item : items) {
+    //     if (!item.isGif) UnloadTexture(item.media.img);
+    // }
 }

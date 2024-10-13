@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "settings.hpp"
 
@@ -46,4 +47,27 @@ namespace Utils
         DrawCircleV({pos.x + size.x, pos.y + size.y}, radius, color); // Bottom right
         DrawCircleV({pos.x, pos.y + size.y}, radius, color);          // Bottom left
     }
+
+
+    struct ShaderWrapper
+    {
+        Shader shader;
+        std::unordered_map<const char*, int> locations;
+
+        void registerUniform(const char* name)
+        {
+            locations[name] = GetShaderLocation(shader, name);
+        }
+
+        // Get the location of a uniform
+        const int& loc(const char* uniformName)
+        {
+            return locations[uniformName];
+        }
+
+        ~ShaderWrapper()
+        {
+            UnloadShader(shader);
+        }
+    };
 }

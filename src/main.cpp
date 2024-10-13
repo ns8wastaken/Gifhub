@@ -22,52 +22,83 @@ int main()
     InitWindow(1200, 800, "Gifhub");
 
     Library library;
-    library.addImage("library/p.png");
-    library.addGif("library/g.gif");
+    library.add("library/img.png");
+    library.add("library/p.png");
+    library.add("library/g.gif");
 
     float screenSize[2] = {
         static_cast<float>(GetScreenWidth()),
         static_cast<float>(GetScreenHeight())
     };
 
-    // Load shader
-    Shader shader                 = LoadShader(0, "src/shaders/rounded_frame.fs");
-    const int screenResolutionLoc = GetShaderLocation(shader, "screenResolution");
+    // Normal frame shader
+    Utils::ShaderWrapper shader_Frame;
+    {
+        shader_Frame.shader = LoadShader(0, "src/shaders/frame.fs");
+        shader_Frame.registerUniform("screenResolution");
+        shader_Frame.registerUniform("texture");
+        shader_Frame.registerUniform("textureSize");
+    }
+
+    // RGB frame shader
+    Utils::ShaderWrapper shader_RGBFrame;
+    {
+        shader_RGBFrame.shader = LoadShader(0, "src/shaders/rgb_frame.fs");
+        shader_RGBFrame.registerUniform("screenResolution");
+        shader_RGBFrame.registerUniform("texture");
+        shader_RGBFrame.registerUniform("textureSize");
+        shader_RGBFrame.registerUniform("time");
+    }
 
     // Generate blank texture for shader
-    Image imBlank        = GenImageColor(screenSize[0], screenSize[1], BLANK);
-    Texture textureBlank = LoadTextureFromImage(imBlank);
+    Image imBlank               = GenImageColor(screenSize[0], screenSize[1], BLANK);
+    Texture shader_TextureBlank = LoadTextureFromImage(imBlank);
     UnloadImage(imBlank);
 
-    float frameTime = 0.0f;
+    // Init shader value
+    SetShaderValue(shader_Frame.shader, shader_Frame.loc("screenResolution"), &screenSize, SHADER_UNIFORM_VEC2);
+    SetShaderValue(shader_RGBFrame.shader, shader_RGBFrame.loc("screenResolution"), &screenSize, SHADER_UNIFORM_VEC2);
+
+    float frameTime   = 0.0f;
+    float programTime = 0.0f;
     while (!WindowShouldClose()) {
         if (IsWindowResized()) {
             screenSize[0] = static_cast<float>(GetScreenWidth());
             screenSize[1] = static_cast<float>(GetScreenHeight());
 
-            Image imBlank = GenImageColor(screenSize[0], screenSize[1], BLANK);
-            textureBlank  = LoadTextureFromImage(imBlank);
+            // Update blank texture for shader
+            Image imBlank       = GenImageColor(screenSize[0], screenSize[1], BLANK);
+            shader_TextureBlank = LoadTextureFromImage(imBlank);
             UnloadImage(imBlank);
+
+            // Update shader values
+            SetShaderValue(shader_Frame.shader, shader_Frame.loc("screenResolution"), &screenSize, SHADER_UNIFORM_VEC2);
+            SetShaderValue(shader_RGBFrame.shader, shader_RGBFrame.loc("screenResolution"), &screenSize, SHADER_UNIFORM_VEC2);
         }
 
-        // Set shader values
-        SetShaderValue(shader, screenResolutionLoc, &screenSize, SHADER_UNIFORM_VEC2);
-
         frameTime = GetFrameTime();
+        programTime += frameTime;
 
         BeginDrawing();
         {
             ClearBackground(Theme::LIGHT_NORMAL);
 
-            DrawTexture(library.getImages()[0], 0, 0, WHITE);
-            DrawTexture(library.getGifs()[0].texture, 0, 200, WHITE);
+            float textureSize[2] = {
+                static_cast<float>(library.getItems()[0].size[0]),
+                static_cast<float>(library.getItems()[0].size[1])
+            };
 
-            // Utils::DrawRoundedRectangle({300, 100}, {200, 100}, 6, Theme::LIGHT_DARK);
-            // DrawRectangle(300, 100, 200, 100, RED);
+            // Normal frame shader
+            SetShaderValue(shader_Frame.shader, shader_Frame.loc("textureSize"), &textureSize, SHADER_UNIFORM_VEC2);
 
-            BeginShaderMode(shader);
+            // RGB frame shader
+            SetShaderValue(shader_RGBFrame.shader, shader_RGBFrame.loc("textureSize"), &textureSize, SHADER_UNIFORM_VEC2);
+            SetShaderValue(shader_RGBFrame.shader, shader_RGBFrame.loc("time"), &programTime, SHADER_UNIFORM_FLOAT);
+
+            BeginShaderMode(shader_RGBFrame.shader);
             {
-                DrawTexture(textureBlank, 0, 0, RED);
+                SetShaderValueTexture(shader_RGBFrame.shader, shader_RGBFrame.loc("texture"), library.getItems()[0].texture);
+                DrawTexture(shader_TextureBlank, 0, 0, RED);
             }
             EndShaderMode();
         }
@@ -75,6 +106,8 @@ int main()
 
         library.update(frameTime);
     }
+
+    UnloadTexture(shader_TextureBlank);
 
     CloseWindow();
     return 0;
