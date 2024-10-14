@@ -18,7 +18,7 @@ typedef union Media
 
 class Library
 {
-private:
+public:
     typedef struct Item
     {
         // Type info
@@ -28,9 +28,10 @@ private:
         // General data
         float size[2];
         Texture texture;
+
+        uint64_t id;
     } Item;
 
-public:
     void add(const std::string& fileName);
 
     void setActive(const int index);
@@ -42,7 +43,7 @@ public:
     ~Library();
 
 private:
-    uint64_t librarySize = 0ULL;
+    uint64_t m_librarySize = 0ULL;
 
-    std::vector<Item> items = {};
+    std::vector<Item> m_items = {};
 };

@@ -8,4 +8,7 @@ namespace Settings
 
 
     constexpr int GIF_FRAME_DELAY = 42;
+
+    constexpr float FRAME_BORDER_WIDTH  = 5.0;
+    constexpr float FRAME_BORDER_RADIUS = 20.0;
 }

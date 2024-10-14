@@ -32,9 +32,8 @@ void main()
 
     vec4 imageColor = texture2D(texture, (ssp - borderThickness) / textureSize);
     vec4 backgroundColor = vec4(1.0, 1.0, 1.0, 0.0);
+    vec3 borderColor = 0.5 + 0.5 * cos(time * 1.5 + fragTexCoord.xyx + vec3(0, 2, 4));
 
     vec4 color = mix(backgroundColor, imageColor, smoothstep(-1.0, 1.0, 1.0 - (dist + halfBorderThickness)));
-
-    vec3 rgb = 0.5 + 0.5 * cos(time * 1.5 + fragTexCoord.xyx + vec3(0, 2, 4));
-    finalColor = mix(vec4(rgb, 1.0), color, smoothstep(-1.0, 1.0, abs(dist) - halfBorderThickness));
+    finalColor = mix(vec4(borderColor, 1.0), color, smoothstep(-1.0, 1.0, abs(dist) - halfBorderThickness));
 }
