@@ -25,6 +25,8 @@ void Gifhub::update(const float& frameTime)
 {
     m_library.update(frameTime);
 
+    m_scroll += GetMouseWheelMove() * 30.0f;
+
     if (IsWindowResized()) {
         m_screenSize[0] = static_cast<float>(GetScreenWidth());
         m_screenSize[1] = static_cast<float>(GetScreenHeight());
@@ -44,11 +46,14 @@ void Gifhub::update(const float& frameTime)
 
 void Gifhub::draw()
 {
+    Vector2 currentImagePos = {0.0f, m_scroll};
+
     BeginDrawing();
     {
         ClearBackground(m_bgColor);
 
         for (const Library::Item& item : getItems()) {
+
             float textureSize[2] = {
                 static_cast<float>(item.size[0]),
                 static_cast<float>(item.size[1])
@@ -56,17 +61,27 @@ void Gifhub::draw()
 
             // Normal frame shader
             SetShaderValue(m_shader_Frame.shader, m_shader_Frame.loc("textureSize"), &textureSize, SHADER_UNIFORM_VEC2);
-
             // RGB frame shader
             SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("textureSize"), &textureSize, SHADER_UNIFORM_VEC2);
             SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("time"), m_time, SHADER_UNIFORM_FLOAT);
 
-            BeginShaderMode(m_shader_RGBFrame.shader);
+            if (CheckCollisionPointRec(GetMousePosition(), {currentImagePos.x, currentImagePos.y, item.size[0], item.size[1]})) {
+                m_shader_active = &m_shader_RGBFrame;
+            }
+            BeginShaderMode(m_shader_active->shader);
             {
-                SetShaderValueTexture(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("texture"), item.texture);
-                DrawTexture(m_shader_TextureBlank, item.id * 350, 0, RED);
+                SetShaderValueTexture(m_shader_active->shader, m_shader_active->loc("texture"), item.texture);
+                DrawTextureEx(m_shader_TextureBlank, currentImagePos, 0, 1, m_frameColor);
             }
             EndShaderMode();
+            m_shader_active = &m_shader_Frame;
+
+            currentImagePos.x += item.size[0] + m_extraImgSpacing;
+
+            if (currentImagePos.x + item.size[0] >= m_screenSize[0]) {
+                currentImagePos.x = 0;
+                currentImagePos.y += Settings::MAX_IMAGE_HEIGHT + Settings::FRAME_BORDER_WIDTH * 2 + Settings::IMAGE_PADDING;
+            }
         }
     }
     EndDrawing();

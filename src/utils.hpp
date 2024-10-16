@@ -38,17 +38,6 @@ namespace Utils
     }
 
 
-    void DrawRoundedRectangle(const Vector2 pos, const Vector2 size, const int radius, const Color color)
-    {
-        DrawRectangle(pos.x, pos.y - radius, size.x, size.y + radius * 2, color); // Top + Bottom
-        DrawRectangle(pos.x - radius, pos.y, size.x + radius * 2, size.y, color); // Left + Right
-        DrawCircleV(pos, radius, color);                              // Top left
-        DrawCircleV({pos.x + size.x, pos.y}, radius, color);          // Top right
-        DrawCircleV({pos.x + size.x, pos.y + size.y}, radius, color); // Bottom right
-        DrawCircleV({pos.x, pos.y + size.y}, radius, color);          // Bottom left
-    }
-
-
     struct ShaderWrapper
     {
         Shader shader;
