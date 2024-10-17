@@ -31,7 +31,6 @@ private:
     Utils::ShaderWrapper m_shader_Frame;
     Utils::ShaderWrapper m_shader_RGBFrame;
     Texture m_shader_TextureBlank;
-    Utils::ShaderWrapper* m_shader_active = &m_shader_Frame;
 
     Library m_library;
 

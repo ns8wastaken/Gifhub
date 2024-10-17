@@ -57,26 +57,28 @@ void Gifhub::draw()
                 static_cast<float>(item.size[1])
             };
 
-            // Normal frame shader
-            SetShaderValue(m_shader_Frame.shader, m_shader_Frame.loc("textureSize"), &textureSize, SHADER_UNIFORM_VEC2);
+            if (CheckCollisionPointRec(GetMousePosition(), {currentImagePos.x, currentImagePos.y, item.size[0], item.size[1]})) {
+                // Mouse hovering over image
+                SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("textureSize"), &textureSize, SHADER_UNIFORM_VEC2);
+                SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("time"), m_time, SHADER_UNIFORM_FLOAT);
 
-            // RGB frame shader
-            SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("textureSize"), &textureSize, SHADER_UNIFORM_VEC2);
-            SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("time"), m_time, SHADER_UNIFORM_FLOAT);
+                BeginShaderMode(m_shader_RGBFrame.shader);
+                {
+                    SetShaderValueTexture(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("texture"), item.texture);
+                    DrawTextureEx(m_shader_TextureBlank, currentImagePos, 0, 1, m_frameColor);
+                }
+                EndShaderMode();
+            }
+            else {
+                SetShaderValue(m_shader_Frame.shader, m_shader_Frame.loc("textureSize"), &textureSize, SHADER_UNIFORM_VEC2);
 
-            if (CheckCollisionPointRec(
-                    GetMousePosition(),
-                    {currentImagePos.x, currentImagePos.y, item.size[0], item.size[1]}
-                )) {
-                m_shader_active = &m_shader_RGBFrame;
+                BeginShaderMode(m_shader_Frame.shader);
+                {
+                    SetShaderValueTexture(m_shader_Frame.shader, m_shader_Frame.loc("texture"), item.texture);
+                    DrawTextureEx(m_shader_TextureBlank, currentImagePos, 0, 1, m_frameColor);
+                }
+                EndShaderMode();
             }
-            BeginShaderMode(m_shader_active->shader);
-            {
-                SetShaderValueTexture(m_shader_active->shader, m_shader_active->loc("texture"), item.texture);
-                DrawTextureEx(m_shader_TextureBlank, currentImagePos, 0, 1, m_frameColor);
-            }
-            EndShaderMode();
-            m_shader_active = &m_shader_Frame;
 
             currentImagePos.x += item.size[0] + m_extraImgSpacing;
 
