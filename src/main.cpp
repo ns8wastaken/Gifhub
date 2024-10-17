@@ -1,5 +1,4 @@
 #include <raylib.h>
-#include <iostream>
 
 #include "utils.hpp"
 #include "library.cpp"

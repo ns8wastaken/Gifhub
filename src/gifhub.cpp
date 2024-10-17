@@ -9,7 +9,6 @@ Gifhub::Gifhub(const Color bgColor, const Color frameColor)
     m_shader_Frame.registerUniform("screenResolution");
     m_shader_Frame.registerUniform("texture");
     m_shader_Frame.registerUniform("textureSize");
-    // SetShaderValue(m_shader_Frame.shader, GetShaderLocation(m_shader_Frame.shader, "radius"), &Settings::FRAME_BORDER_RADIUS, SHADER_UNIFORM_FLOAT);
     // SetShaderValue(m_shader_Frame.shader, GetShaderLocation(m_shader_Frame.shader, "borderThickness"), &Settings::FRAME_BORDER_WIDTH, SHADER_UNIFORM_FLOAT);
 
     // RGB frame shader
@@ -46,14 +45,13 @@ void Gifhub::update(const float& frameTime)
 
 void Gifhub::draw()
 {
-    Vector2 currentImagePos = {0.0f, m_scroll};
+    Vector2 currentImagePos = {Settings::IMG_SCREEN_PADDING, m_scroll + Settings::IMG_SCREEN_PADDING};
 
     BeginDrawing();
     {
         ClearBackground(m_bgColor);
 
         for (const Library::Item& item : getItems()) {
-
             float textureSize[2] = {
                 static_cast<float>(item.size[0]),
                 static_cast<float>(item.size[1])
@@ -61,11 +59,15 @@ void Gifhub::draw()
 
             // Normal frame shader
             SetShaderValue(m_shader_Frame.shader, m_shader_Frame.loc("textureSize"), &textureSize, SHADER_UNIFORM_VEC2);
+
             // RGB frame shader
             SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("textureSize"), &textureSize, SHADER_UNIFORM_VEC2);
             SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("time"), m_time, SHADER_UNIFORM_FLOAT);
 
-            if (CheckCollisionPointRec(GetMousePosition(), {currentImagePos.x, currentImagePos.y, item.size[0], item.size[1]})) {
+            if (CheckCollisionPointRec(
+                    GetMousePosition(),
+                    {currentImagePos.x, currentImagePos.y, item.size[0], item.size[1]}
+                )) {
                 m_shader_active = &m_shader_RGBFrame;
             }
             BeginShaderMode(m_shader_active->shader);
@@ -78,8 +80,8 @@ void Gifhub::draw()
 
             currentImagePos.x += item.size[0] + m_extraImgSpacing;
 
-            if (currentImagePos.x + item.size[0] >= m_screenSize[0]) {
-                currentImagePos.x = 0;
+            if (currentImagePos.x + item.size[0] >= m_screenSize[0] - Settings::IMG_SCREEN_PADDING) {
+                currentImagePos.x = Settings::IMG_SCREEN_PADDING;
                 currentImagePos.y += Settings::MAX_IMAGE_HEIGHT + Settings::FRAME_BORDER_WIDTH * 2 + Settings::IMAGE_PADDING;
             }
         }

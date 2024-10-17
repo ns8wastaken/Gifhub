@@ -7,6 +7,8 @@ namespace Settings
     constexpr int MAX_IMAGE_HEIGHT = 300;
     constexpr int IMAGE_PADDING    = 10;
 
+    constexpr int IMG_SCREEN_PADDING = 30;
+
 
     constexpr int GIF_FRAME_DELAY = 42;
 
