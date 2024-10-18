@@ -6,7 +6,7 @@ DEPS_RAYLIB = -L C:/raylib/lib -lraylib -lgdi32 -lwinmm
 all: compile finish open
 
 compile:
-	$(CPP) $(ARGS) -I C:/raylib/include -I C:/sqlite3 -o main.exe $(DEPS_RAYLIB)
+	$(CPP) $(ARGS) -I C:/raylib/include -o main.exe $(DEPS_RAYLIB)
 
 finish:
 	@echo -e "\033[0;32m\nDone at $(shell date +%T)\n\e[0m"

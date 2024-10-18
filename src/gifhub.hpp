@@ -23,7 +23,7 @@ public:
 private:
     float m_scroll = 0.0f;
 
-    int m_extraImgSpacing = Settings::FRAME_BORDER_WIDTH * 2 + Settings::IMAGE_PADDING;
+    static constexpr int m_extraImgSpacing = Settings::FRAME_BORDER_WIDTH * 2 + Settings::IMAGE_PADDING;
 
     Color m_bgColor;
     Color m_frameColor;
