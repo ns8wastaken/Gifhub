@@ -20,6 +20,39 @@ Gifhub::Gifhub(const Color bgColor, const Color frameColor)
 }
 
 
+void Gifhub::loadImagesAsync()
+{
+    std::thread loaderThread(&loadImages, this);
+    loaderThread.detach();  // Detach the thread so it runs independently
+}
+
+
+void Gifhub::processAsyncQueue()
+{
+    std::lock_guard<std::mutex> lock(queueMutex);
+    while (!imageQueue.empty()) {
+        auto& [fileName, image] = imageQueue.top();
+
+        m_library.add(fileName, image);
+
+        UnloadImage(image);
+        imageQueue.pop();  // Remove from the queue
+    }
+}
+
+
+void Gifhub::loadImages()
+{
+    for (const std::string& filePath : Utils::getFilesInDirectory("library")) {
+        Image image = LoadImage(filePath.c_str());
+        Utils::ClampImageSize(&image);
+
+        std::lock_guard<std::mutex> lock(queueMutex);
+        imageQueue.push({filePath, image});
+    }
+}
+
+
 void Gifhub::update(const float& frameTime)
 {
     m_library.update(frameTime);
@@ -92,10 +125,16 @@ void Gifhub::draw()
 }
 
 
-void Gifhub::addToLibrary(const std::string& fileName) { m_library.add(fileName); }
+void Gifhub::addToLibrary(const std::string& fileName)
+{
+    m_library.add(fileName);
+}
 
 
-const std::vector<Library::Item>& Gifhub::getItems() { return m_library.getItems(); }
+const std::vector<Library::Item>& Gifhub::getItems()
+{
+    return m_library.getItems();
+}
 
 
 void Gifhub::assignUniforms(float* screenSize, float* time)

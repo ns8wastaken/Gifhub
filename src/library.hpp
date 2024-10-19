@@ -33,8 +33,7 @@ public:
     } Item;
 
     void add(const std::string& fileName);
-
-    void setActive(const int index);
+    void add(const std::string& fileName, Image& image);
 
     void update(const float& frameTime);
 

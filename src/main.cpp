@@ -18,11 +18,7 @@ int main()
     // }
 
     Gifhub gifhub(Settings::Theme::LIGHT_NORMAL, Settings::Theme::LIGHT_DARK);
-
-    // Load library
-    for (const std::string& filePath : Utils::getFilesInDirectory("library")) {
-        gifhub.addToLibrary(TextFormat("%s", filePath.c_str()));
-    }
+    gifhub.loadImagesAsync();
 
     float screenSize[2] = {
         static_cast<float>(GetScreenWidth()),
@@ -38,9 +34,13 @@ int main()
         frameTime = GetFrameTime();
         programTime += frameTime;
 
+        gifhub.processAsyncQueue();
+
         gifhub.update(frameTime);
         gifhub.draw();
     }
+
+    // asyncImagesThread.join();
 
     CloseWindow();
     return 0;
