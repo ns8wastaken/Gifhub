@@ -25,11 +25,12 @@ public:
         Media media;
         bool isGif;
 
-        // General data
+        // Image data
         float size[2];
         Texture texture;
 
         uint64_t id;
+        std::string path;
     } Item;
 
     void add(const std::string& fileName);
@@ -37,7 +38,7 @@ public:
 
     void update(const float& frameTime);
 
-    const std::vector<Item>& getItems();
+    const std::vector<Item>& getItems() const;
 
     ~Library();
 

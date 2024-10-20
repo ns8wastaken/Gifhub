@@ -12,7 +12,8 @@ void Library::add(const std::string& fileName)
             .isGif   = true,
             .size    = {static_cast<float>(image.width), static_cast<float>(image.height)},
             .texture = LoadTextureFromImage(image),
-            .id      = m_librarySize
+            .id      = m_librarySize,
+            .path    = fileName
         });
     }
     else {
@@ -21,7 +22,8 @@ void Library::add(const std::string& fileName)
             .isGif   = false,
             .size    = {static_cast<float>(image.width), static_cast<float>(image.height)},
             .texture = LoadTextureFromImage(image),
-            .id      = m_librarySize
+            .id      = m_librarySize,
+            .path    = fileName
         });
     }
 
@@ -40,7 +42,8 @@ void Library::add(const std::string& fileName, Image& image)
             .isGif   = true,
             .size    = {static_cast<float>(image.width), static_cast<float>(image.height)},
             .texture = LoadTextureFromImage(image),
-            .id      = m_librarySize
+            .id      = m_librarySize,
+            .path    = fileName
         });
     }
     else {
@@ -49,7 +52,8 @@ void Library::add(const std::string& fileName, Image& image)
             .isGif   = false,
             .size    = {static_cast<float>(image.width), static_cast<float>(image.height)},
             .texture = LoadTextureFromImage(image),
-            .id      = m_librarySize
+            .id      = m_librarySize,
+            .path    = fileName
         });
     }
 
@@ -68,7 +72,7 @@ void Library::update(const float& frameTime)
 }
 
 
-const std::vector<Library::Item>& Library::getItems()
+const std::vector<Library::Item>& Library::getItems() const
 {
     return m_items;
 }

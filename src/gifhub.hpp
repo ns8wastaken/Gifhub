@@ -1,9 +1,10 @@
 #pragma once
 #include <raylib.h>
+#include <sqlite3.h>
+#include <unordered_map>
 #include <thread>
 #include <mutex>
 #include <stack>
-// #include <sqlite3.h>
 
 #include "settings.hpp"
 #include "library.hpp"
@@ -16,8 +17,6 @@ public:
 
     void update(const float& frameTime);
     void draw();
-    void addToLibrary(const std::string& fileName);
-    const std::vector<Library::Item>& getItems();
 
     void assignUniforms(float* screenSize, float* time);
 
@@ -30,15 +29,18 @@ public:
     ~Gifhub();
 
 private:
-    std::stack<std::pair<std::string, Image>> imageQueue;
+    std::stack<std::pair<std::string, Image>> imageQueue = {};
     std::mutex queueMutex;
+    std::unordered_map<uint64_t, Texture> m_cachedVisibleTextures = {};
+
+    sqlite3* m_database;
 
     // Background image loading method (runs in a separate thread)
     void loadImages();
 
     float m_scroll = 0.0f;
 
-    static constexpr int m_extraImgSpacing = Settings::FRAME_BORDER_WIDTH * 2 + Settings::IMAGE_PADDING;
+    static constexpr int m_extraImgSpacing = Settings::FRAME_BORDER_WIDTH * 2.0f + Settings::IMAGE_PADDING;
 
     Color m_bgColor;
     Color m_frameColor;

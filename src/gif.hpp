@@ -9,10 +9,10 @@ struct Gif
     Gif(const char* fileName) : img(LoadImageAnim(fileName, &frameCount)) {}
 
     float delayCount = 0; // Current delay count
-    int frameCount   = 0; // Number of frames in the gif
     int currentFrame = 0;
 
     const Image img;
+    int frameCount; // Number of frames in the gif
 
     const unsigned int memOffset = img.width * img.height * 4;
 

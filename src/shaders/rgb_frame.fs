@@ -7,12 +7,12 @@ uniform vec2 screenResolution;
 uniform sampler2D texture;
 uniform vec2 textureSize;
 uniform float time;
+uniform float borderThickness;
 
 out vec4 finalColor;
 
 const float radius = 20.0;
-const float borderThickness = 5.0;
-const float halfBorderThickness = borderThickness / 2.0;
+float halfBorderThickness = borderThickness / 2.0;
 
 float RectSDF(vec2 pos, vec2 size, float radius)
 {

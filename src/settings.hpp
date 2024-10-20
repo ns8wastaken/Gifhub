@@ -7,13 +7,11 @@ namespace Settings
     constexpr int MAX_IMAGE_HEIGHT = 300;
     constexpr int IMAGE_PADDING    = 10;
 
-    constexpr int IMG_SCREEN_PADDING = 30;
-
+    constexpr float FRAME_BORDER_WIDTH  = 5.0f;
 
     constexpr int GIF_FRAME_DELAY = 42;
 
-    constexpr int FRAME_BORDER_WIDTH    = 5;
-    constexpr float FRAME_BORDER_RADIUS = 20.0f;
+    constexpr int IMG_SCREEN_PADDING = 30;
 
 
     namespace Theme

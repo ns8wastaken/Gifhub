@@ -7,15 +7,9 @@
 
 int main()
 {
+    // SetTraceLogLevel(LOG_NONE);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(1200, 800, "Gifhub");
-
-    // sqlite3* db;
-    // int rc = sqlite3_open("library/sqlite3/data.sql", &db);
-
-    // if (!rc) {
-    //     printf("Opened database successfully\n");
-    // }
+    InitWindow(1600, 800, "Gifhub");
 
     Gifhub gifhub(Settings::Theme::LIGHT_NORMAL, Settings::Theme::LIGHT_DARK);
     gifhub.loadImagesAsync();
@@ -38,9 +32,9 @@ int main()
 
         gifhub.update(frameTime);
         gifhub.draw();
-    }
 
-    // asyncImagesThread.join();
+        DrawFPS(0, 0);
+    }
 
     CloseWindow();
     return 0;
