@@ -28,6 +28,11 @@ namespace Utils
         return files;
     }
 
+    inline bool isImage(const std::string& path)
+    {
+        return path.ends_with(".png") || path.ends_with(".jpg") || path.ends_with(".jpeg");
+    }
+
 
     void ClampImageSize(Image* image)
     {

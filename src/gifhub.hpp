@@ -18,7 +18,7 @@ public:
     void update(const float& frameTime);
     void draw();
 
-    void assignUniforms(float* screenSize, float* time);
+    void assignUniforms(float* time);
 
     // Load images in a background thread
     void loadImagesAsync();
@@ -29,9 +29,16 @@ public:
     ~Gifhub();
 
 private:
-    std::stack<std::pair<std::string, Image>> imageQueue = {};
+    typedef struct QueueItem
+    {
+        std::string path;
+        Image image;
+    } QueueItem;
+
+    std::stack<QueueItem> imageQueue = {};
     std::mutex queueMutex;
-    std::unordered_map<uint64_t, Texture> m_cachedVisibleTextures = {};
+
+    std::vector<Library::Item*> m_visibleItems = {};
 
     sqlite3* m_database;
 
@@ -49,9 +56,14 @@ private:
     Utils::ShaderWrapper m_shader_Frame;
     Utils::ShaderWrapper m_shader_RGBFrame;
     Texture m_shader_TextureBlank;
+    Texture m_infoTexture; // Texture for displaying info
 
     Library m_library;
 
-    float* m_screenSize = nullptr;
-    float* m_time       = nullptr;
+    float m_screenSize[2] = {
+        static_cast<float>(GetScreenWidth()),
+        static_cast<float>(GetScreenHeight())
+    };
+
+    float* m_time = nullptr;
 };

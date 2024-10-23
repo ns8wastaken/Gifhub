@@ -8,42 +8,29 @@
 #include "gif.hpp"
 
 
-typedef union Media
+struct Library
 {
-    Gif gif;
-    Image img;
-    ~Media() {};
-} Media;
-
-
-class Library
-{
-public:
     typedef struct Item
     {
         // Type info
-        Media media;
+        Gif gif;
         bool isGif;
 
         // Image data
+        bool isLoaded = false;
         float size[2];
-        Texture texture;
+        Texture texture = {};
+
+        Vector2 position = {0.0f, 0.0f};
 
         uint64_t id;
         std::string path;
     } Item;
 
-    void add(const std::string& fileName);
-    void add(const std::string& fileName, Image& image);
+    void add(const std::string& fileName, const Image& image);
 
     void update(const float& frameTime);
 
-    const std::vector<Item>& getItems() const;
-
-    ~Library();
-
-private:
-    uint64_t m_librarySize = 0ULL;
-
-    std::vector<Item> m_items = {};
+    uint64_t librarySize    = 0ULL;
+    std::vector<Item> items = {};
 };
