@@ -16,6 +16,30 @@ namespace Utils
 {
     namespace fs = std::filesystem;
 
+
+    std::vector<std::string> splitStr(const std::string& str, const char delimiter)
+    {
+        std::vector<std::string> list;
+        std::size_t currIndex = 0;
+        std::size_t nextIndex;
+
+        while (currIndex < str.length()) {
+            nextIndex = str.find_first_of(delimiter, currIndex);
+
+            if (nextIndex == std::string::npos) {
+                list.push_back(str.substr(currIndex));
+                break;
+            }
+
+            list.push_back(str.substr(currIndex, nextIndex - currIndex));
+            currIndex = nextIndex + 1;
+        }
+
+        return list;
+    }
+
+
+
     std::vector<std::string> getFilesInDirectory(const std::string& directoryPath)
     {
         std::vector<std::string> files;
@@ -27,6 +51,7 @@ namespace Utils
 
         return files;
     }
+
 
     inline bool isImage(const std::string& path)
     {

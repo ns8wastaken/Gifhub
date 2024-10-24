@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <cstdint>
-#include <cstring>
 
 #include "settings.hpp"
 #include "utils.hpp"
@@ -23,7 +22,6 @@ struct Library
 
         Vector2 position = {0.0f, 0.0f};
 
-        uint64_t id;
         std::string path;
     } Item;
 
@@ -33,4 +31,6 @@ struct Library
 
     uint64_t librarySize    = 0ULL;
     std::vector<Item> items = {};
+
+    ~Library();
 };

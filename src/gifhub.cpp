@@ -15,14 +15,21 @@ Gifhub::Gifhub(const Color bgColor, const Color frameColor)
         throw std::runtime_error("Failed to open database");
     }
 
+    // Init database
+    sqlite3_exec(
+        m_database, "CREATE TABLE IF NOT EXISTS images ("
+                    "path TEXT NOT NULL PRIMARY KEY,"
+                    "img_width INTEGER NOT NULL,"
+                    "img_height INTEGER NOT NULL,"
+                    "date_added DATETIME DEFAULT CURRENT_TIMESTAMP);",
+        nullptr,
+        nullptr,
+        nullptr
+    );
+
     // Generate blank texture for shader
     Image imBlank         = GenImageColor(m_screenSize[0], m_screenSize[1], m_bgColor);
     m_shader_TextureBlank = LoadTextureFromImage(imBlank);
-    UnloadImage(imBlank);
-
-    // Generate blank texture for info tab
-    imBlank       = GenImageColor(m_screenSize[0] * 0.75f, m_screenSize[1] * 0.75f, m_bgColor);
-    m_infoTexture = LoadTextureFromImage(imBlank);
     UnloadImage(imBlank);
 
     // Normal frame shader
@@ -181,15 +188,11 @@ void Gifhub::draw()
             m_screenSize[1] * 0.85f
         };
 
-        Image img       = GenImageColor(size[0], size[1], BLANK);
-        Texture texture = LoadTextureFromImage(img);
-        UnloadImage(img);
-
         SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("textureSize"), &size, SHADER_UNIFORM_VEC2);
         SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("time"), m_time, SHADER_UNIFORM_FLOAT);
 
         BeginShaderMode(m_shader_RGBFrame.shader);
-        SetShaderValueTexture(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("texture"), texture);
+        SetShaderValueTexture(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("texture"), m_shader_TextureBlank);
         DrawTextureEx(
             m_shader_TextureBlank,
             Vector2{
@@ -201,8 +204,6 @@ void Gifhub::draw()
             m_frameColor
         );
         EndShaderMode();
-
-        UnloadTexture(texture);
     }
 
     EndDrawing();
@@ -221,7 +222,7 @@ void Gifhub::assignUniforms(float* time)
 Gifhub::~Gifhub()
 {
     UnloadTexture(m_shader_TextureBlank);
-    UnloadTexture(m_infoTexture);
+    // UnloadTexture(m_infoTexture);
 
     sqlite3_close(m_database);
 }

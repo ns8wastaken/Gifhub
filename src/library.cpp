@@ -1,35 +1,6 @@
 #include "library.hpp"
 
 
-// void Library::add(const std::string& fileName)
-// {
-//     Image image = LoadImage(fileName.c_str());
-//     Utils::ClampImageSize(&image);
-
-//     if (fileName.ends_with(".gif")) {
-//         items.push_back(Item{
-//             .gif   = Gif(""),
-//             .isGif = true,
-//             .size  = {static_cast<float>(image.width), static_cast<float>(image.height)},
-//             .id    = librarySize,
-//             .path  = fileName
-//         });
-//     }
-//     else {
-//         items.push_back(Item{
-//             .gif   = Gif(fileName.c_str()),
-//             .isGif = false,
-//             .size  = {static_cast<float>(image.width), static_cast<float>(image.height)},
-//             .id    = librarySize,
-//             .path  = fileName
-//         });
-//     }
-
-//     UnloadImage(image);
-//     ++librarySize;
-// }
-
-
 void Library::add(const std::string& fileName, const Image& image)
 {
     printInfo(fileName.c_str());
@@ -38,7 +9,6 @@ void Library::add(const std::string& fileName, const Image& image)
             .gif   = Gif(""),
             .isGif = false,
             .size  = {static_cast<float>(image.width), static_cast<float>(image.height)},
-            .id    = librarySize,
             .path  = fileName
         });
     }
@@ -47,7 +17,6 @@ void Library::add(const std::string& fileName, const Image& image)
             .gif   = Gif(fileName.c_str()),
             .isGif = true,
             .size  = {static_cast<float>(image.width), static_cast<float>(image.height)},
-            .id    = librarySize,
             .path  = fileName
         });
     }
@@ -62,6 +31,22 @@ void Library::update(const float& frameTime)
         if (item.isGif && item.isLoaded) {
             // Update gif frame
             item.gif.update(frameTime, item.texture);
+        }
+    }
+}
+
+
+Library::~Library()
+{
+    for (Item& item : items) {
+        if (item.isLoaded) {
+            UnloadTexture(item.texture);
+            printInfo(TextFormat("Unloaded texture: %s", item.path.c_str()));
+        }
+
+        if (item.isGif) {
+            UnloadImage(item.gif.img);
+            printInfo(TextFormat("Unloaded gif img: %s", item.path.c_str()));
         }
     }
 }

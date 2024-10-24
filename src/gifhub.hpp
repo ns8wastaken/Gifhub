@@ -1,7 +1,7 @@
 #pragma once
 #include <raylib.h>
 #include <sqlite3.h>
-#include <unordered_map>
+
 #include <thread>
 #include <mutex>
 #include <stack>
@@ -56,7 +56,6 @@ private:
     Utils::ShaderWrapper m_shader_Frame;
     Utils::ShaderWrapper m_shader_RGBFrame;
     Texture m_shader_TextureBlank;
-    Texture m_infoTexture; // Texture for displaying info
 
     Library m_library;
 

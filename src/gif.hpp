@@ -6,9 +6,10 @@
 
 struct Gif
 {
-    Gif(const char* fileName) : img(LoadImageAnim(fileName, &frameCount)) {}
+    Gif(const char* fileName)
+        : img((fileName != static_cast<const char*>("")) ? LoadImageAnim(fileName, &frameCount) : Image{}) {}
 
-    float delayCount = 0; // Current delay count
+    float delayCount = 0;
     int currentFrame = 0;
 
     const Image img;
