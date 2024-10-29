@@ -10,15 +10,19 @@
 #include "library.hpp"
 
 
+extern "C"
+{
+#include "tinyfiledialogs/tinyfiledialogs.h"
+}
+
+
 class Gifhub
 {
 public:
-    Gifhub(const Color bgColor, const Color frameColor);
+    Gifhub(float* time, const Color bgColor, const Color frameColor);
 
     void update(const float& frameTime);
-    void draw();
-
-    void assignUniforms(float* time);
+    void render();
 
     // Load images in a background thread
     void loadImagesAsync();
@@ -42,7 +46,8 @@ private:
 
     sqlite3* m_database;
 
-    // Background image loading method (runs in a separate thread)
+    // Background image loading methods (run in a separate thread)
+    void loadImage(const std::string& filePath); // For importing images
     void loadImages();
 
     float m_scroll = 0.0f;

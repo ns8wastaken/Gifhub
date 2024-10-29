@@ -3,11 +3,13 @@
 
 namespace Settings
 {
+    constexpr const char* const ALLOWED_FILE_TYPES[] = {"*.png", "*.jpg"};
+
     constexpr int MAX_IMAGE_WIDTH  = 300;
     constexpr int MAX_IMAGE_HEIGHT = 300;
     constexpr int IMAGE_PADDING    = 10;
 
-    constexpr float FRAME_BORDER_WIDTH  = 5.0f;
+    constexpr float FRAME_BORDER_WIDTH = 5.0f;
 
     constexpr int GIF_FRAME_DELAY = 42;
 

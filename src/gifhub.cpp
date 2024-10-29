@@ -1,8 +1,8 @@
 #include "gifhub.hpp"
 
 
-Gifhub::Gifhub(const Color bgColor, const Color frameColor)
-    : m_bgColor(bgColor), m_frameColor(frameColor)
+Gifhub::Gifhub(float* time, const Color bgColor, const Color frameColor)
+    : m_bgColor(bgColor), m_frameColor(frameColor), m_time(time)
 {
     // Open database
     int rc = sqlite3_open_v2("library/sqlite3/data.db", &m_database, SQLITE_OPEN_READWRITE, nullptr);
@@ -46,6 +46,22 @@ Gifhub::Gifhub(const Color bgColor, const Color frameColor)
     m_shader_RGBFrame.registerUniform("textureSize");
     m_shader_RGBFrame.registerUniform("time");
     SetShaderValue(m_shader_RGBFrame.shader, GetShaderLocation(m_shader_RGBFrame.shader, "borderThickness"), &Settings::FRAME_BORDER_WIDTH, SHADER_UNIFORM_FLOAT);
+
+
+    SetShaderValue(m_shader_Frame.shader, m_shader_Frame.loc("screenResolution"), m_screenSize, SHADER_UNIFORM_VEC2);
+    SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("screenResolution"), m_screenSize, SHADER_UNIFORM_VEC2);
+}
+
+
+void Gifhub::loadImage(const std::string& filePath)
+{
+    Image image = LoadImage(filePath.c_str());
+    Utils::ClampImageSize(&image);
+
+    ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+
+    std::lock_guard<std::mutex> lock(queueMutex);
+    imageQueue.push({filePath, image});
 }
 
 
@@ -111,7 +127,7 @@ void Gifhub::update(const float& frameTime)
     }
 
 
-    // Update visible items
+    // Update visible items (locations + visibility)
     m_visibleItems.clear();
 
     Vector2 currentImagePos = {Settings::IMG_SCREEN_PADDING, m_scroll + Settings::IMG_SCREEN_PADDING};
@@ -143,10 +159,22 @@ void Gifhub::update(const float& frameTime)
             currentImagePos.y += Settings::FRAME_BORDER_WIDTH * 2.0f + Settings::MAX_IMAGE_HEIGHT + Settings::IMAGE_PADDING;
         }
     }
+
+
+    // Import images (user input)
+    if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) && IsKeyPressed(KEY_O)) {
+        const char* filePaths = tinyfd_openFileDialog("Import Image or Gif", "", 2, Settings::ALLOWED_FILE_TYPES, "Allowed files", 1);
+
+        printf("filePaths: %s\n", filePaths);
+
+        for (const std::string& path : Utils::splitStr(filePaths, '|')) {
+            loadImage(path);
+        }
+    }
 }
 
 
-void Gifhub::draw()
+void Gifhub::render()
 {
     BeginDrawing();
     ClearBackground(m_bgColor);
@@ -207,15 +235,6 @@ void Gifhub::draw()
     }
 
     EndDrawing();
-}
-
-
-void Gifhub::assignUniforms(float* time)
-{
-    m_time = time;
-
-    SetShaderValue(m_shader_Frame.shader, m_shader_Frame.loc("screenResolution"), m_screenSize, SHADER_UNIFORM_VEC2);
-    SetShaderValue(m_shader_RGBFrame.shader, m_shader_RGBFrame.loc("screenResolution"), m_screenSize, SHADER_UNIFORM_VEC2);
 }
 
 

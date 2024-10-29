@@ -23,10 +23,12 @@ namespace Utils
         std::size_t currIndex = 0;
         std::size_t nextIndex;
 
-        while (currIndex < str.length()) {
+        while (currIndex < str.length())
+        {
             nextIndex = str.find_first_of(delimiter, currIndex);
 
-            if (nextIndex == std::string::npos) {
+            if (nextIndex == std::string::npos)
+            {
                 list.push_back(str.substr(currIndex));
                 break;
             }
@@ -39,12 +41,13 @@ namespace Utils
     }
 
 
-
+    // Returns the file paths to all files in a directory
     std::vector<std::string> getFilesInDirectory(const std::string& directoryPath)
     {
         std::vector<std::string> files;
 
-        for (const auto& entry : fs::directory_iterator(directoryPath)) {
+        for (const auto& entry : fs::directory_iterator(directoryPath))
+        {
             if (entry.is_regular_file())
                 files.push_back(entry.path().string());
         }
@@ -61,7 +64,8 @@ namespace Utils
 
     void ClampImageSize(Image* image)
     {
-        if (image->width > Settings::MAX_IMAGE_WIDTH || image->height > Settings::MAX_IMAGE_HEIGHT) {
+        if (image->width > Settings::MAX_IMAGE_WIDTH || image->height > Settings::MAX_IMAGE_HEIGHT)
+        {
             const int max = std::max(image->width, image->height);
             ImageResize(
                 image,
