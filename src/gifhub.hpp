@@ -8,6 +8,7 @@
 
 #include "settings.hpp"
 #include "library.hpp"
+#include "sqlite3_utils.hpp"
 
 
 extern "C"
@@ -47,8 +48,8 @@ private:
     sqlite3* m_database;
 
     // Background image loading methods (run in a separate thread)
-    void loadImage(const std::string& filePath); // For importing images
-    void loadImages();
+    void loadImage(const std::string& filePath); // For manually importing images
+    void loadImages(); // Loads images from the library
 
     float m_scroll = 0.0f;
 

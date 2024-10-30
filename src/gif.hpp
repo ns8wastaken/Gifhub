@@ -9,6 +9,9 @@ struct Gif
     Gif(const char* fileName)
         : img((fileName != static_cast<const char*>("")) ? LoadImageAnim(fileName, &frameCount) : Image{}) {}
 
+    // Time that it takes for a frame to change
+    static constexpr inline int gifFrameDelay = Settings::GIF_FRAME_DELAY;
+
     float delayCount = 0;
     int currentFrame = 0;
 
@@ -21,7 +24,7 @@ struct Gif
     {
         delayCount += frameTime * 1000.0f;
 
-        if (delayCount > Settings::GIF_FRAME_DELAY) {
+        if (delayCount > gifFrameDelay) {
             delayCount   = 0;
             currentFrame = (currentFrame + 1) % frameCount;
             UpdateTexture(texture, (unsigned char*)img.data + currentFrame * memOffset);

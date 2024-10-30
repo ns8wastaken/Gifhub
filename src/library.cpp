@@ -1,23 +1,47 @@
 #include "library.hpp"
 
 
-void Library::add(const std::string& fileName, const Image& image)
+void Library::add(const std::string& filePath, int img_width, int img_height)
 {
-    printInfo(fileName.c_str());
-    if (Utils::isImage(fileName)) {
+    printInfo(TextFormat("Loading texture: %s", filePath.c_str()));
+    if (Utils::isImage(filePath)) {
+        items.push_back(Item{
+            .gif   = Gif(""),
+            .isGif = false,
+            .size  = {static_cast<float>(img_width), static_cast<float>(img_height)},
+            .path  = filePath
+        });
+    }
+    else if (filePath.ends_with(".gif")) {
+        items.push_back(Item{
+            .gif   = Gif(filePath.c_str()),
+            .isGif = true,
+            .size  = {static_cast<float>(img_width), static_cast<float>(img_height)},
+            .path  = filePath
+        });
+    }
+
+    ++librarySize;
+}
+
+
+void Library::add(const std::string& filePath, const Image& image)
+{
+    printInfo(TextFormat("Loading texture: %s", filePath.c_str()));
+    if (Utils::isImage(filePath)) {
         items.push_back(Item{
             .gif   = Gif(""),
             .isGif = false,
             .size  = {static_cast<float>(image.width), static_cast<float>(image.height)},
-            .path  = fileName
+            .path  = filePath
         });
     }
-    else if (fileName.ends_with(".gif")) {
+    else if (filePath.ends_with(".gif")) {
         items.push_back(Item{
-            .gif   = Gif(fileName.c_str()),
+            .gif   = Gif(filePath.c_str()),
             .isGif = true,
             .size  = {static_cast<float>(image.width), static_cast<float>(image.height)},
-            .path  = fileName
+            .path  = filePath
         });
     }
 

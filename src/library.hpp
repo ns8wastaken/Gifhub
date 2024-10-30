@@ -25,7 +25,8 @@ struct Library
         std::string path;
     } Item;
 
-    void add(const std::string& fileName, const Image& image);
+    void add(const std::string& filePath, int img_width, int img_height);
+    void add(const std::string& filePath, const Image& image);
 
     void update(const float& frameTime);
 

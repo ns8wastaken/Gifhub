@@ -7,7 +7,7 @@
 
 int main()
 {
-    // SetTraceLogLevel(LOG_NONE);
+    SetTraceLogLevel(LOG_NONE);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(1600, 900, "Gifhub");
 

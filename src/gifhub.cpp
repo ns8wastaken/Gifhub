@@ -17,15 +17,24 @@ Gifhub::Gifhub(float* time, const Color bgColor, const Color frameColor)
 
     // Init database
     sqlite3_exec(
-        m_database, "CREATE TABLE IF NOT EXISTS images ("
-                    "path TEXT NOT NULL PRIMARY KEY,"
-                    "img_width INTEGER NOT NULL,"
-                    "img_height INTEGER NOT NULL,"
-                    "date_added DATETIME DEFAULT CURRENT_TIMESTAMP);",
+        m_database,
+        "CREATE TABLE IF NOT EXISTS images ("
+        "path TEXT NOT NULL PRIMARY KEY,"
+        "img_width INTEGER NOT NULL,"
+        "img_height INTEGER NOT NULL,"
+        "date_added DATETIME DEFAULT CURRENT_TIMESTAMP);",
         nullptr,
         nullptr,
         nullptr
     );
+
+    // sqlite3_exec(
+    //     m_database,
+    //     "INSERT INTO images (path, img_width, img_height) VALUES ('library/soy-sauce.png', 100, 40);",
+    //     nullptr,
+    //     nullptr,
+    //     nullptr
+    // );
 
     // Generate blank texture for shader
     Image imBlank         = GenImageColor(m_screenSize[0], m_screenSize[1], m_bgColor);
@@ -91,6 +100,10 @@ void Gifhub::processAsyncQueue()
     std::lock_guard<std::mutex> lock(queueMutex);
     while (!imageQueue.empty()) {
         QueueItem& item = imageQueue.top();
+
+        if (!Sqlite3Utils::pathIsinDatabase(m_database, item.path.c_str())) {
+            Sqlite3Utils::addImage(m_database, item.path.c_str(), item.image.width, item.image.height);
+        }
 
         m_library.add(item.path, item.image);
 
