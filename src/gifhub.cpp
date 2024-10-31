@@ -19,22 +19,15 @@ Gifhub::Gifhub(float* time, const Color bgColor, const Color frameColor)
     sqlite3_exec(
         m_database,
         "CREATE TABLE IF NOT EXISTS images ("
-        "path TEXT NOT NULL PRIMARY KEY,"
-        "img_width INTEGER NOT NULL,"
-        "img_height INTEGER NOT NULL,"
-        "date_added DATETIME DEFAULT CURRENT_TIMESTAMP);",
+        "    path TEXT NOT NULL PRIMARY KEY,"
+        "    img_width INTEGER NOT NULL,"
+        "    img_height INTEGER NOT NULL,"
+        "    date_added DATETIME DEFAULT CURRENT_TIMESTAMP"
+        ");",
         nullptr,
         nullptr,
         nullptr
     );
-
-    // sqlite3_exec(
-    //     m_database,
-    //     "INSERT INTO images (path, img_width, img_height) VALUES ('library/soy-sauce.png', 100, 40);",
-    //     nullptr,
-    //     nullptr,
-    //     nullptr
-    // );
 
     // Generate blank texture for shader
     Image imBlank         = GenImageColor(m_screenSize[0], m_screenSize[1], m_bgColor);
@@ -69,20 +62,37 @@ void Gifhub::loadImage(const std::string& filePath)
 
     ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
+    Vector2 size = {
+        static_cast<float>(image.width),
+        static_cast<float>(image.height)
+    };
+
+    Vector2 imgSize = size;
+
+    Utils::ClampImageSize(size);
+
     std::lock_guard<std::mutex> lock(queueMutex);
-    imageQueue.push({filePath, image});
+    imageQueue.push(QueueItem{
+        .path    = filePath,
+        .imgSize = imgSize,
+        .size    = size
+    });
 }
 
 
 void Gifhub::loadImages()
 {
     for (const std::string& filePath : Utils::getFilesInDirectory("library")) {
-        if (Sqlite3Utils::pathIsinDatabase(m_database, filePath.c_str())) {
-            Vector2 size = Sqlite3Utils::getImageSize(m_database, filePath.c_str());
+        Vector2 size;
 
+        if (Sqlite3Utils::pathIsinDatabase(m_database, filePath.c_str())) {
+            size = Sqlite3Utils::getImageSize(m_database, filePath.c_str());
+            Utils::ClampImageSize(size);
+
+            std::lock_guard<std::mutex> lock(queueMutex);
             imageQueue.push(QueueItem{
                 .path        = filePath,
-                .data        = {.size = size},
+                .size        = size,
                 .isInLibrary = true
             });
 
@@ -90,14 +100,23 @@ void Gifhub::loadImages()
         }
 
         Image image = LoadImage(filePath.c_str());
-        Utils::ClampImageSize(&image);
 
         ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
+        size = {
+            static_cast<float>(image.width),
+            static_cast<float>(image.height)
+        };
+
+        Vector2 imgSize = size;
+
+        Utils::ClampImageSize(size);
+
         std::lock_guard<std::mutex> lock(queueMutex);
         imageQueue.push(QueueItem{
-            .path = filePath,
-            .data = {.image = image}
+            .path    = filePath,
+            .imgSize = imgSize,
+            .size    = size
         });
     }
 }
@@ -117,12 +136,11 @@ void Gifhub::processAsyncQueue()
         QueueItem& item = imageQueue.top();
 
         if (!item.isInLibrary) {
-            // TODO: Add item to database
+            Sqlite3Utils::addImageToDatabase(m_database, item.path.c_str(), item.imgSize.x, item.imgSize.y);
         }
 
-        m_library.add(item.path, item.image);
+        m_library.add(item.path, item.size.x, item.size.y);
 
-        UnloadImage(item.image);
         imageQueue.pop();
     }
 }

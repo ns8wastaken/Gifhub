@@ -36,16 +36,18 @@ namespace Sqlite3Utils
         Vector2 size = {0.0f, 0.0f};
 
         sqlite3_stmt* stmt;
-        const char* sql = "SELECT img_width FROM images WHERE;";
+        const char* sql = "SELECT img_width, img_height FROM images WHERE path = ?;";
 
         std::vector<std::string> imagePaths = {};
 
         // Prepare the SQL statement
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, path, -1, SQLITE_STATIC);
+
             // Loop over each row
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
-                size.x = sqlite3_column_int(stmt, 1);
-                size.y = sqlite3_column_int(stmt, 2);
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                size.x = sqlite3_column_int(stmt, 0);
+                size.y = sqlite3_column_int(stmt, 1);
             }
         }
         else {
@@ -81,7 +83,7 @@ namespace Sqlite3Utils
     }
 
 
-    void addImage(sqlite3* db, const char* path, int img_width, int img_height)
+    void addImageToDatabase(sqlite3* db, const char* path, int img_width, int img_height)
     {
         sqlite3_stmt* stmt;
         const char* sql = "INSERT INTO images (path, img_width, img_height) VALUES (?, ?, ?);";

@@ -38,11 +38,8 @@ private:
     {
         std::string path;
 
-        union Data
-        {
-            Image image;
-            Vector2 size;
-        } data;
+        Vector2 imgSize = {0.0f, 0.0f};
+        Vector2 size;
 
         bool isInLibrary = false;
     } QueueItem;

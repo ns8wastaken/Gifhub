@@ -14,10 +14,14 @@
 
 #ifdef CONSOLE_INFO
 #define printInfo(msg)  printf("\033[0;32mGifhub\033[0m: %s\n", msg)
+#else
+#define printInfo(msg)
 #endif
 
 #ifdef CONSOLE_ERROR
 #define printError(msg) printf("\033[0;31mGifhub\033[0m: %s\n", msg)
+#else
+#define printError(msg)
 #endif
 
 
@@ -77,6 +81,16 @@ namespace Utils
                 image->width * Settings::MAX_IMAGE_WIDTH / max,
                 image->height * Settings::MAX_IMAGE_HEIGHT / max
             );
+        }
+    }
+
+    void ClampImageSize(Vector2& size)
+    {
+        if (size.x > Settings::MAX_IMAGE_WIDTH || size.y > Settings::MAX_IMAGE_HEIGHT) {
+            const float max = std::max(size.x, size.y);
+
+            size.x *= (float)Settings::MAX_IMAGE_WIDTH / max;
+            size.y *= (float)Settings::MAX_IMAGE_HEIGHT / max;
         }
     }
 

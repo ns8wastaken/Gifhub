@@ -4,6 +4,7 @@
 void Library::add(const std::string& filePath, int img_width, int img_height)
 {
     printInfo(TextFormat("Loading texture: %s", filePath.c_str()));
+    // printError(TextFormat("Image size: %i  %i", img_width, img_height));
     if (Utils::isImage(filePath)) {
         items.push_back(Item{
             .gif   = Gif(""),
