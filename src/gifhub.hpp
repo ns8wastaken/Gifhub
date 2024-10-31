@@ -37,7 +37,14 @@ private:
     typedef struct QueueItem
     {
         std::string path;
-        Image image;
+
+        union Data
+        {
+            Image image;
+            Vector2 size;
+        } data;
+
+        bool isInLibrary = false;
     } QueueItem;
 
     std::stack<QueueItem> imageQueue = {};

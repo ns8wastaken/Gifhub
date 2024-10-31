@@ -77,13 +77,28 @@ void Gifhub::loadImage(const std::string& filePath)
 void Gifhub::loadImages()
 {
     for (const std::string& filePath : Utils::getFilesInDirectory("library")) {
+        if (Sqlite3Utils::pathIsinDatabase(m_database, filePath.c_str())) {
+            Vector2 size = Sqlite3Utils::getImageSize(m_database, filePath.c_str());
+
+            imageQueue.push(QueueItem{
+                .path        = filePath,
+                .data        = {.size = size},
+                .isInLibrary = true
+            });
+
+            continue;
+        }
+
         Image image = LoadImage(filePath.c_str());
         Utils::ClampImageSize(&image);
 
         ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
         std::lock_guard<std::mutex> lock(queueMutex);
-        imageQueue.push({filePath, image});
+        imageQueue.push(QueueItem{
+            .path = filePath,
+            .data = {.image = image}
+        });
     }
 }
 
@@ -101,8 +116,8 @@ void Gifhub::processAsyncQueue()
     while (!imageQueue.empty()) {
         QueueItem& item = imageQueue.top();
 
-        if (!Sqlite3Utils::pathIsinDatabase(m_database, item.path.c_str())) {
-            Sqlite3Utils::addImage(m_database, item.path.c_str(), item.image.width, item.image.height);
+        if (!item.isInLibrary) {
+            // TODO: Add item to database
         }
 
         m_library.add(item.path, item.image);
