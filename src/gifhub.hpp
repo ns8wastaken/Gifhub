@@ -29,6 +29,7 @@ public:
     void loadImagesAsync();
 
     // Process the images in the async queue in the main thread
+    // Adds the images to the library
     void processAsyncQueue();
 
     ~Gifhub();
@@ -51,9 +52,7 @@ private:
 
     sqlite3* m_database;
 
-    // Background image loading methods (run in a separate thread)
     void loadImage(const std::string& filePath); // For manually importing images
-    void loadImages(); // Loads images from the library
 
     float m_scroll = 0.0f;
 

@@ -3,7 +3,7 @@ ARGS = -std=c++20 -g -Wall -pedantic -Wextra
 
 DEPS_RAYLIB  = -L C:/raylib/lib -lraylib -lgdi32 -lwinmm
 DEPS_SQLITE3 = -L C:/sqlite3/lib -lsqlite3
-DEPS_TINYFD  = -L ./src/tinyfiledialogs -ltinyfd -L C:\mingw64\x86_64-w64-mingw32\lib -lole32 -lcomdlg32
+DEPS_TINYFD  = -L ./src/lib -ltinyfd -L C:\mingw64\x86_64-w64-mingw32\lib -lole32 -lcomdlg32
 
 all: cls compile finish open
 

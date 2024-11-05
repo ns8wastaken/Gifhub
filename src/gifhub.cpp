@@ -80,51 +80,48 @@ void Gifhub::loadImage(const std::string& filePath)
 }
 
 
-void Gifhub::loadImages()
+void Gifhub::loadImagesAsync()
 {
-    for (const std::string& filePath : Utils::getFilesInDirectory("library")) {
-        Vector2 size;
+    std::thread loaderThread([this]() {
+        for (const std::string& filePath : Utils::getFilesInDirectory("library")) {
+            Vector2 size;
 
-        if (Sqlite3Utils::pathIsinDatabase(m_database, filePath.c_str())) {
-            size = Sqlite3Utils::getImageSize(m_database, filePath.c_str());
+            if (Sqlite3Utils::pathIsinDatabase(m_database, filePath.c_str())) {
+                size = Sqlite3Utils::getImageSize(m_database, filePath.c_str());
+                Utils::ClampImageSize(size);
+
+                std::lock_guard<std::mutex> lock(queueMutex);
+                imageQueue.push(QueueItem{
+                    .path        = filePath,
+                    .size        = size,
+                    .isInLibrary = true
+                });
+
+                continue;
+            }
+
+            Image image = LoadImage(filePath.c_str());
+
+            ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+
+            size = {
+                static_cast<float>(image.width),
+                static_cast<float>(image.height)
+            };
+
+            Vector2 imgSize = size;
+
             Utils::ClampImageSize(size);
 
             std::lock_guard<std::mutex> lock(queueMutex);
             imageQueue.push(QueueItem{
-                .path        = filePath,
-                .size        = size,
-                .isInLibrary = true
+                .path    = filePath,
+                .imgSize = imgSize,
+                .size    = size
             });
-
-            continue;
         }
+    });
 
-        Image image = LoadImage(filePath.c_str());
-
-        ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
-
-        size = {
-            static_cast<float>(image.width),
-            static_cast<float>(image.height)
-        };
-
-        Vector2 imgSize = size;
-
-        Utils::ClampImageSize(size);
-
-        std::lock_guard<std::mutex> lock(queueMutex);
-        imageQueue.push(QueueItem{
-            .path    = filePath,
-            .imgSize = imgSize,
-            .size    = size
-        });
-    }
-}
-
-
-void Gifhub::loadImagesAsync()
-{
-    std::thread loaderThread(&loadImages, this);
     loaderThread.detach();
 }
 
