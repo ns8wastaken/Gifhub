@@ -92,9 +92,9 @@ void Gifhub::loadImagesAsync()
 
                 std::lock_guard<std::mutex> lock(queueMutex);
                 imageQueue.push(QueueItem{
-                    .path        = filePath,
-                    .size        = size,
-                    .isInLibrary = true
+                    .path         = filePath,
+                    .size         = size,
+                    .isInDatabase = true
                 });
 
                 continue;
@@ -132,7 +132,7 @@ void Gifhub::processAsyncQueue()
     while (!imageQueue.empty()) {
         QueueItem& item = imageQueue.top();
 
-        if (!item.isInLibrary) {
+        if (!item.isInDatabase) {
             Sqlite3Utils::addImageToDatabase(m_database, item.path.c_str(), item.imgSize.x, item.imgSize.y);
         }
 
@@ -284,7 +284,6 @@ void Gifhub::render()
 Gifhub::~Gifhub()
 {
     UnloadTexture(m_shader_TextureBlank);
-    // UnloadTexture(m_infoTexture);
 
     sqlite3_close(m_database);
 }

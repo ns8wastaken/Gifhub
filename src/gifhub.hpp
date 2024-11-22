@@ -42,7 +42,7 @@ private:
         Vector2 imgSize = {0.0f, 0.0f};
         Vector2 size;
 
-        bool isInLibrary = false;
+        bool isInDatabase = false;
     } QueueItem;
 
     std::stack<QueueItem> imageQueue = {};

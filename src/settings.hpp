@@ -5,6 +5,11 @@ namespace Settings
 {
     constexpr const char* const ALLOWED_FILE_TYPES[] = {"*.png", "*.jpg"};
 
+
+    constexpr int SEARCH_BAR_WIDTH  = 1280;
+    constexpr int SEARCH_BAR_HEIGHT = 1280;
+
+
     constexpr int MAX_IMAGE_WIDTH  = 300;
     constexpr int MAX_IMAGE_HEIGHT = 300;
     constexpr int IMAGE_PADDING    = 10;
