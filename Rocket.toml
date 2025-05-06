@@ -1,0 +1,10 @@
+[default]
+address = "127.0.0.1"
+port = 8000
+
+[default.limits]
+file = "10MiB"
+data-form = "12MiB"
+
+[default.databases.gallery_db]
+url = "db/gallery.sqlite"
