@@ -25,15 +25,12 @@ pub fn images() -> Json<Vec<String>> {
 pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<Vec<DbQueryImage>>, String> {
     let tags = q
         .split(',')
-        .filter_map(|n| {
-            let n = n.trim();
-            (!n.is_empty()).then(|| {
-                format!("%'{}'%", n)
+        .filter_map(|t| {
+            let t = t.trim();
+            (!t.is_empty()).then(|| {
+                format!("'{}'", t)
             })
         })
-        // .map(|t| t.trim())
-        // .filter(|t| !t.is_empty())
-        // .map(|t| format!("'{}'", t))
         .collect::<Vec<String>>();
 
     let count = tags.len() as i64;
@@ -45,9 +42,5 @@ pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<
         .await
         .map_err(|e| format!("Failed to query database: {}", e))?;
 
-    println!("printing images");
-    for i in &results {
-        println!("{}", i.uuid);
-    }
     Ok(Json(results))
 }

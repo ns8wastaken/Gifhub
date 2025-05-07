@@ -11,9 +11,9 @@
             <form id="upload-form" enctype="multipart/form-data">
                 <div class="upload-row">
                     <input type="file" name="file" id="file-input" required hidden>
-                    <label for="file-input" class="choose-file-button">📁 Choose File</label>
+                    <label for="file-input" class="choose-file-button">Choose File</label>
 
-                    <input type="text" name="tags" id="tags-input" placeholder="pet, dog, ball" required>
+                    <input type="text" name="tags" id="tags-input"placeholder="pet, dog, ball" required>
                 </div>
                 <input type="submit" id="file-upload" value="Upload">
             </form>
@@ -25,13 +25,20 @@
             <legend>Search</legend>
             <form id="search" method="post" enctype="text/plain">
                 <input type="text" id="search-input" placeholder="Search tags..." />
-                <!-- <button type="submit">Search</button> -->
             </form>
         </fieldset>
 
         <div class="gallery" id="gallery"></div>
 
+        <div id="context-menu" class="context-menu">
+            <ul>
+                <li>Edit tags</li>
+                <li id="remove-img">Remove image</li>
+            </ul>
+        </div>
+
         <script src="gallery.js"></script>
         <script src="upload.js"></script>
+        <script src="context_menu.js"></script>
     </body>
 </html>

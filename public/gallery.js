@@ -7,6 +7,7 @@ function update_gallery() {
 
             images_paths.forEach(name => {
                 const img = document.createElement('img');
+                img.className = 'gallery-img';
                 img.src = `/gallery/${name}`;
                 img.alt = name;
                 gallery.appendChild(img);
@@ -31,6 +32,7 @@ async function search_images(event) {
 
         images.forEach(image => {
             const img = document.createElement('img');
+            img.className = 'gallery-img';
             img.src = `/gallery/${image.uuid}`;
             gallery.appendChild(img);
         });
