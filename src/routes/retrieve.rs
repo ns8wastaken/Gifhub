@@ -27,23 +27,27 @@ pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<
         .split(',')
         .filter_map(|n| {
             let n = n.trim();
-            n.is_empty().then(|| {
-                format!("%{}%", n)
+            (!n.is_empty()).then(|| {
+                format!("%'{}'%", n)
             })
         })
+        // .map(|t| t.trim())
+        // .filter(|t| !t.is_empty())
+        // .map(|t| format!("'{}'", t))
         .collect::<Vec<String>>();
 
     let count = tags.len() as i64;
+    let query = QUERY_IMAGE_BY_TAGS.format([&tags.join(",")]);
 
-    let results: Vec<DbQueryImage> = sqlx::query_as(
-        QUERY_IMAGE_BY_TAGS
-            .format([&tags.join(",")])
-            .as_str()
-    )
+    let results: Vec<DbQueryImage> = sqlx::query_as(&query)
         .bind(count)
         .fetch_all(&mut **db)
         .await
         .map_err(|e| format!("Failed to query database: {}", e))?;
 
+    println!("printing images");
+    for i in &results {
+        println!("{}", i.uuid);
+    }
     Ok(Json(results))
 }

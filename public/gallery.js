@@ -14,7 +14,7 @@ function update_gallery() {
         });
 }
 
-document.getElementById('search').addEventListener('submit', async function (event) {
+async function search_images(event) {
         event.preventDefault();
 
         const query = document.getElementById('search-input').value;
@@ -23,8 +23,8 @@ document.getElementById('search').addEventListener('submit', async function (eve
             return;
         }
 
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        const images = await res.json();
+        const result = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const images = await result.json();
 
         const gallery = document.getElementById('gallery');
         gallery.innerHTML = '';
@@ -34,7 +34,9 @@ document.getElementById('search').addEventListener('submit', async function (eve
             img.src = `/gallery/${image.uuid}`;
             gallery.appendChild(img);
         });
-})
+}
+
+document.getElementById('search').addEventListener('submit', search_images)
 
 async function reset_gallery() {
     const response = await fetch('/api/reset-gallery', { method: 'POST' });
