@@ -16,7 +16,7 @@ pub const INIT_DB_IMAGES: &str = r#"
 pub const INIT_DB_IMAGE_TAGS: &str = r#"
     CREATE TABLE IF NOT EXISTS image_tags (
         image_id INTEGER,
-        tag_id INTEGER,
+        tag_id   INTEGER,
         PRIMARY KEY (image_id, tag_id),
         FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
         FOREIGN KEY (tag_id)   REFERENCES tags(id)   ON DELETE CASCADE
@@ -64,4 +64,9 @@ pub const QUERY_IMAGE_BY_TAGS: &str = r#"
     WHERE t.value IN ({})
     GROUP BY i.id
     HAVING COUNT(DISTINCT t.value) = $1;
+"#;
+
+
+pub const REMOVE_IMAGE: &str = r#"
+    DELETE FROM images WHERE uuid = $1;
 "#;

@@ -13,7 +13,6 @@ pub async fn reset(mut db: Connection<GalleryDb>) -> Result<String, String> {
     sql_exec_map_err!(db, DROP_DB_IMAGES,     "Failed to drop 'images'")?;
     sql_exec_map_err!(db, DROP_DB_TAGS,       "Failed to drop 'tags'")?;
 
-
     // Init gallery.sqlite
     sql_exec_map_err!(db, INIT_DB_TAGS,       "Failed to create 'tags'")?;
     sql_exec_map_err!(db, INIT_DB_IMAGES,     "Failed to create 'images'")?;

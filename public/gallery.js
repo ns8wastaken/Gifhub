@@ -24,8 +24,8 @@ async function search_images(event) {
             return;
         }
 
-        const result = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        const images = await result.json();
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const images = await response.json();
 
         const gallery = document.getElementById('gallery');
         gallery.innerHTML = '';
