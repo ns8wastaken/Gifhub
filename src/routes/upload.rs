@@ -17,37 +17,34 @@ pub async fn file(mut form: Form<UploadForm<'_>>, mut db: Connection<GalleryDb>)
     let uuid = Uuid::new_v4().to_string();
     let new_filepath = format!("gallery/{}", uuid);
 
-    match form.file.persist_to(&new_filepath).await {
-        Ok(_) => {
-            sql_exec_map_err!(
-                db,
-                ADD_IMAGE,
-                format!("Failed to upload image with uuid '{}'", &uuid),
-                &uuid
-            )?;
-
-            for tag in form.tags.split(',') {
-                let tag = tag.trim().to_lowercase();
-                println!("{}", tag);
-
-                sql_exec_map_err!(
-                    db,
-                    ADD_TAG,
-                    format!("Failed to upload tag '{}'", &tag),
-                    &tag
-                )?;
-                sql_exec_map_err!(
-                    db,
-                    ADD_IMAGE_TAG,
-                    format!("Failed to upload image_tag for image with uuid '{}'", &uuid),
-                    &uuid,
-                    &tag
-                )?;
-            }
-
-            Ok(String::from("Successfully uploaded images and tags"))
-        },
-
-        Err(e) => Err(String::from(format!("Failed to save the file: {}", e)))
+    if let Err(e) = form.file.copy_to(&new_filepath).await {
+        return Err(format!("Failed to save the file: {}", e));
     }
+
+    sql_exec_map_err!(
+        db,
+        ADD_IMAGE,
+        format!("Failed to upload image with uuid '{}'", &uuid),
+        &uuid
+    )?;
+
+    for tag in form.tags.split(',') {
+        let tag = tag.trim().to_lowercase();
+
+        sql_exec_map_err!(
+            db,
+            ADD_TAG,
+            format!("Failed to upload tag '{}'", &tag),
+            &tag
+        )?;
+        sql_exec_map_err!(
+            db,
+            ADD_IMAGE_TAG,
+            format!("Failed to upload image_tag for image with uuid '{}'", &uuid),
+            &uuid,
+            &tag
+        )?;
+    }
+
+    Ok(String::from("Successfully uploaded images and tags"))
 }

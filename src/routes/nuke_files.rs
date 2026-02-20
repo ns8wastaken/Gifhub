@@ -3,9 +3,8 @@ use rocket_db_pools::Connection;
 use crate::{db::gallery_db::GalleryDb, sql_exec_map_err};
 use crate::db::schema::*;
 
-
-#[post("/reset-gallery")]
-pub async fn reset(mut db: Connection<GalleryDb>) -> Result<String, String> {
+#[post("/nuke-files")]
+pub async fn nuke(mut db: Connection<GalleryDb>) -> Result<String, String> {
     let gallery_path = std::path::Path::new("gallery");
 
     // Clear gallery.sqlite

@@ -5,10 +5,12 @@ use crate::db::schema::REMOVE_IMAGE;
 
 #[delete("/<uuid>")]
 pub async fn delete_image(mut db: Connection<GalleryDb>, uuid: &str) -> Result<String, String> {
+    // Delete from image table
+    // TODO: delete from other tables
     sql_exec_map_err!(
         db,
         REMOVE_IMAGE,
-        "Failed to delte image from the db",
+        "Failed to delete image from the db",
         uuid
     )?;
 
