@@ -1,4 +1,4 @@
 #[derive(serde::Serialize, sqlx::FromRow)]
-pub struct DbQueryImage {
+pub struct DbQueryImageUUID {
     pub uuid: String,
 }

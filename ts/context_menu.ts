@@ -1,33 +1,71 @@
+import { Api } from "./api.js";
+import { editModal } from "./modal.js";
+
 export function initContextMenu() {
     const menu = document.getElementById("context-menu") as HTMLDivElement | null;
     const gallery = document.getElementById("gallery") as HTMLDivElement | null;
     let currentImage: HTMLImageElement | null = null;
 
-    gallery?.addEventListener("contextmenu", event => {
-        const target = (event.target as HTMLElement).closest(".gallery-img") as HTMLImageElement;
+    // Show / hide menu
+    gallery?.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+
+        const target = (event.target as HTMLElement)
+            .closest(".gallery-img") as HTMLImageElement | null;
+
         if (target && menu) {
-            event.preventDefault();
             currentImage = target;
-            menu.style.display = "block";
-            menu.style.left = `${event.pageX}px`;
-            menu.style.top = `${event.pageY}px`;
+
+            menu.classList.add("visible");
+
+            const menuWidth = menu.offsetWidth;
+            const menuHeight = menu.offsetHeight;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
+            // Flip menu if too close to right edge
+            let x = event.clientX;
+            let y = event.clientY;
+
+            if (x + menuWidth > windowWidth) x = x - menuWidth;
+            if (y + menuHeight > windowHeight) y = y - menuHeight;
+
+            menu.style.left = `${x}px`;
+            menu.style.top = `${y}px`;
+
+            // Close the menu when clicking anywhere else
+            const closeMenu = () => {
+                menu.classList.remove("visible");
+                document.removeEventListener("click", closeMenu);
+            };
+            document.addEventListener("click", closeMenu);
         }
     });
 
-    document.addEventListener("click", () => {
-        if (menu) menu.style.display = "none";
-    });
+    menu?.addEventListener("click", async (event) => {
+        const target = event.target as HTMLElement;
+        const action = target.dataset.action;
 
-    document.getElementById("remove-img")?.addEventListener("click", async () => {
+        if (!action) return;
         if (!currentImage) return;
-        const uuid = currentImage.dataset.uuid;
 
-        const response = await fetch(`/gallery/${uuid}`, {
-            method: "DELETE"
-        });
+        const uuid = currentImage.dataset.uuid as string;
 
-        if (response.ok) {
-            currentImage.remove();
+        switch (action) {
+            case "edit-tags": {
+                const tags = await Api.fetchTags(uuid);
+                console.log(tags);
+                editModal(uuid, tags);
+                break;
+            }
+
+            case "delete": {
+                const response = await Api.deleteImage(uuid);
+                if (response.ok) {
+                    currentImage.remove();
+                }
+                break;
+            }
         }
     });
 }

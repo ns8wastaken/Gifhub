@@ -1,11 +1,13 @@
 import { updateGallery, searchImages } from "./gallery.js";
 import { initContextMenu } from "./context_menu.js";
 import { initUploadForm } from "./upload.js";
+import { initNukeButton } from "./nuke.js";
 
 function main() {
     // Initialize modular components
     initContextMenu();
     initUploadForm();
+    initNukeButton();
 
     // Handle Search
     const searchForm = document.getElementById("search-form");

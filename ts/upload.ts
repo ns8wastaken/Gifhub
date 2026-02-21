@@ -8,13 +8,14 @@ export async function initUploadForm() {
     uploadButton?.addEventListener("change", () => {
         if (uploadButton.files?.length === 1) {
             if (status) status.textContent = `Selected: ${uploadButton.files[0].name}`;
-            if (status) status.style.color = "var(--accent)";
+            if (status) status.style.color = "var(--neutral)";
         }
     });
 
     form?.addEventListener("submit", async (event) => {
         event.preventDefault();
 
+        if (status) status.style.color = "var(--neutral)";
         if (status) status.textContent = "Uploading...";
 
         const response = await fetch("/upload", {
@@ -25,8 +26,11 @@ export async function initUploadForm() {
         if (status) status.textContent = await response.text();
 
         if (response.ok) {
+            if (status) status.style.color = "var(--success)";
             form.reset();
             updateGallery();
+        } else {
+            if (status) status.style.color = "var(--success)";
         }
     });
 }

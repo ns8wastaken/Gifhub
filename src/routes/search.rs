@@ -3,7 +3,7 @@ use rocket_db_pools::Connection;
 use dyn_fmt::AsStrFormatExt;
 
 use crate::GalleryDb;
-use crate::db::{schema::QUERY_IMAGE_BY_TAGS, models::DbQueryImage};
+use crate::db::{schema::QUERY_IMAGE_BY_TAGS, models::DbQueryImageUUID};
 
 #[get("/images")]
 pub fn images() -> Json<Vec<String>> {
@@ -22,7 +22,7 @@ pub fn images() -> Json<Vec<String>> {
 }
 
 #[get("/search?<q>")]
-pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<Vec<DbQueryImage>>, String> {
+pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<Vec<DbQueryImageUUID>>, String> {
     let tags = q
         .split(',')
         .filter_map(|t| {
@@ -36,7 +36,7 @@ pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<
     let count = tags.len() as i64;
     let query = QUERY_IMAGE_BY_TAGS.format([&tags.join(",")]);
 
-    let results: Vec<DbQueryImage> = sqlx::query_as(&query)
+    let results: Vec<DbQueryImageUUID> = sqlx::query_as(&query)
         .bind(count)
         .fetch_all(&mut **db)
         .await

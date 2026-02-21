@@ -7,6 +7,8 @@
         <link rel="stylesheet" href="styles.css">
     </head>
     <body>
+        <button id="nuke-btn" class="btn-danger-fixed">Nuke Gallery</button>
+
         <header>
             <h1>Gif<span>hub</span></h1>
         </header>
@@ -40,9 +42,38 @@
 
         <div id="context-menu" class="context-menu">
             <ul>
-                <li>Edit tags</li>
-                <li id="remove-img" class="danger">Remove image</li>
+                <li data-action="edit-tags">Edit tags</li>
+                <li data-action="delete" class="danger">Remove image</li>
             </ul>
+        </div>
+
+        <div id="custom-modal-container" class="modal-backdrop" style="display: none;">
+            <div class="modal-card">
+                <h3 id="modal-title"></h3>
+                <p id="modal-message"></p>
+                <div class="modal-actions">
+                    <button id="modal-cancel" class="btn-secondary">Cancel</button>
+                    <button id="modal-confirm" class="btn-primary">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="edit-modal-container" class="modal-backdrop" data-urgency="none" style="display: none;">
+            <div class="modal-card">
+                <h3>Edit Image Tags</h3>
+
+                <img id="edit-preview-img" src="" alt="Preview">
+
+                <div class="tag-input-group">
+                    <label for="edit-tags-input">Tags (separated by commas)</label>
+                    <input type="text" id="edit-tags-input" placeholder="e.g. funny, reaction, cat">
+                </div>
+
+                <div class="modal-actions">
+                    <button id="edit-cancel" class="btn-secondary">Cancel</button>
+                    <button id="edit-save" class="btn-primary">Save Changes</button>
+                </div>
+            </div>
         </div>
 
         <script type="module" src="main.js"></script>

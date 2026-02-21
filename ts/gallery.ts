@@ -1,4 +1,4 @@
-import { GifImage } from "./types.js"
+import { GifhubImage } from "./types.js"
 
 export async function updateGallery() {
     try {
@@ -10,7 +10,7 @@ export async function updateGallery() {
     }
 }
 
-export function renderImages(images: GifImage[]) {
+export function renderImages(images: GifhubImage[]) {
     const gallery = document.getElementById("gallery");
     if (!gallery) return;
     gallery.innerHTML = "";

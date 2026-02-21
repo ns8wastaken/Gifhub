@@ -1,5 +1,4 @@
-export interface GifImage {
+export interface GifhubImage {
     uuid: string;
     tags: string[];
-    url: string;
 }

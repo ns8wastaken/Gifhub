@@ -1,3 +1,6 @@
+/*
+* INITIALIZATION
+*/
 pub const INIT_DB_TAGS: &str = r#"
     CREATE TABLE IF NOT EXISTS tags (
         id    INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,6 +27,9 @@ pub const INIT_DB_IMAGE_TAGS: &str = r#"
 "#;
 
 
+/*
+* DROPPING
+*/
 pub const DROP_DB_IMAGES: &str = r#"
     DROP TABLE IF EXISTS images;
 "#;
@@ -37,6 +43,9 @@ pub const DROP_DB_IMAGE_TAGS: &str = r#"
 "#;
 
 
+/*
+* INSERTING
+*/
 pub const ADD_IMAGE: &str = r#"
     INSERT INTO images (uuid)
     VALUES ($1);
@@ -56,6 +65,9 @@ pub const ADD_IMAGE_TAG: &str = r#"
 "#;
 
 
+/*
+* QUERYING
+*/
 pub const QUERY_IMAGE_BY_TAGS: &str = r#"
     SELECT i.uuid
     FROM images     i
@@ -66,7 +78,27 @@ pub const QUERY_IMAGE_BY_TAGS: &str = r#"
     HAVING COUNT(DISTINCT t.value) = $1;
 "#;
 
+pub const QUERY_IMAGE_FOR_TAGS: &str = r#"
+    SELECT GROUP_CONCAT(t.value) as tags
+    FROM tags t
+    JOIN image_tags it ON t.id = it.tag_id
+    JOIN images i ON i.id = it.image_id
+    WHERE i.uuid = $1;
+"#;
 
+
+/*
+* DELETE IMAGES
+*/
 pub const REMOVE_IMAGE: &str = r#"
     DELETE FROM images WHERE uuid = $1;
+"#;
+
+
+/*
+* DELETE TAGS
+*/
+pub const DELETE_IMAGE_TAGS: &str = r#"
+    DELETE FROM image_tags
+    WHERE image_id = (SELECT id FROM images WHERE uuid = $1);
 "#;

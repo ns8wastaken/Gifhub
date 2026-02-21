@@ -6,7 +6,7 @@ mod macros;
 
 use db::gallery_db::{GalleryDb, init_db};
 use rocket_db_pools::Database;
-use routes::{upload, search, nuke_files, delete};
+use routes::{upload, search, delete, nuke_files, tags};
 use rocket::fs::{relative, FileServer};
 use rocket::fairing::AdHoc;
 
@@ -37,4 +37,5 @@ async fn rocket() -> _ {
         ])
         .mount("/gallery", FileServer::from(relative!("gallery"))) // getting individual images
         .mount("/gallery", routes![delete::delete_image]) // delete an image
+        .mount("/gallery", routes![tags::edit_tags, tags::get_tags]) // edit/get the tags of an image
 }
