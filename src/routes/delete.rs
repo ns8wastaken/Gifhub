@@ -1,20 +1,17 @@
 use rocket_db_pools::Connection;
 use rocket::State;
 
-use crate::{db::gallery_db::GalleryDb, sql_exec_map_err};
-use crate::db::schema::REMOVE_IMAGE;
+use crate::db::gallery_db::GalleryDb;
+use crate::db::schema::remove_image;
 use crate::AppConfig;
 
 #[delete("/<uuid>")]
 pub async fn delete_image(config: &State<AppConfig>, mut db: Connection<GalleryDb>, uuid: &str) -> Result<String, String> {
     // Delete from image table
     // TODO: delete from other tables
-    sql_exec_map_err!(
-        db,
-        REMOVE_IMAGE,
-        "Failed to delete image from the db",
-        uuid
-    )?;
+    remove_image(&mut **db, uuid)
+        .await
+        .map_err(|e| format!("Failed to delete image: {e}"))?;
 
     let path = config.gallery_path.join(&uuid);
     std::fs::remove_file(path)

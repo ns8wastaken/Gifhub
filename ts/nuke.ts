@@ -5,7 +5,6 @@ export async function initNukeButton() {
     const nukeBtn = document.getElementById('nuke-btn') as HTMLButtonElement | null;
 
     nukeBtn?.addEventListener("click", async () => {
-        // const confirmed = confirm("WARNING: This will delete ALL images and reset the database. Are you sure?");
         const confirmed = await modal(
             "Nuke Gallery?",
             "This will permanently delete all GIFs and tags. Proceed?",

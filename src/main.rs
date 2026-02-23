@@ -2,7 +2,6 @@
 
 mod routes;
 mod db;
-mod macros;
 
 use std::path::PathBuf;
 use rocket_db_pools::Database;
@@ -10,7 +9,7 @@ use routes::{upload, search, delete, nuke_files, tags};
 use rocket::fs::{relative, FileServer};
 use rocket::fairing::AdHoc;
 use rocket::figment::value::{Map, Value};
-use db::gallery_db::{GalleryDb, init_db};
+use db::gallery_db::{GalleryDb, run_migrations};
 
 pub struct AppConfig {
     pub gallery_path: PathBuf,
@@ -51,9 +50,11 @@ async fn rocket() -> _ {
     let figment = rocket::Config::figment()
         .merge(("databases.gallery_db", db_config));
 
+    let migration_fairing = AdHoc::try_on_ignite("SQLx Migrations", run_migrations);
+
     rocket::custom(figment)
         .attach(GalleryDb::init())
-        .attach(AdHoc::on_ignite("Init DB", init_db))
+        .attach(migration_fairing)
         .mount("/", FileServer::from(relative!("public")).rank(1)) // html
         .mount("/", routes![upload::file]) // uploading image
         .mount("/api", routes![

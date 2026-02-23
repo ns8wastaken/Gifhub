@@ -54,7 +54,6 @@ export function initContextMenu() {
         switch (action) {
             case "edit-tags": {
                 const tags = await Api.fetchTags(uuid);
-                console.log(tags);
                 editModal(uuid, tags);
                 break;
             }

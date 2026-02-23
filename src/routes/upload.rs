@@ -4,8 +4,8 @@ use rocket::fs::TempFile;
 use rocket_db_pools::Connection;
 use uuid::Uuid;
 
-use crate::{AppConfig, sql_exec_map_err, GalleryDb};
-use crate::db::schema::{ADD_IMAGE, ADD_TAG, ADD_IMAGE_TAG};
+use crate::{AppConfig, GalleryDb};
+use crate::db::schema::{add_image, add_tag, link_image_tag};
 
 #[derive(FromForm)]
 pub struct UploadForm<'a> {
@@ -22,29 +22,20 @@ pub async fn file(config: &State<AppConfig>, mut form: Form<UploadForm<'_>>, mut
         return Err(format!("Failed to save the file: {}", e));
     }
 
-    sql_exec_map_err!(
-        db,
-        ADD_IMAGE,
-        format!("Failed to upload image with uuid '{}'", &uuid),
-        &uuid
-    )?;
+    add_image(&mut **db, &uuid)
+        .await
+        .map_err(|e| format!("Failed to upload image with uuid '{e}'"))?;
 
     for tag in form.tags.split(',') {
         let tag = tag.trim().to_lowercase();
 
-        sql_exec_map_err!(
-            db,
-            ADD_TAG,
-            format!("Failed to upload tag '{}'", &tag),
-            &tag
-        )?;
-        sql_exec_map_err!(
-            db,
-            ADD_IMAGE_TAG,
-            format!("Failed to upload image_tag for image with uuid '{}'", &uuid),
-            &uuid,
-            &tag
-        )?;
+        add_tag(&mut **db, &tag)
+            .await
+            .map_err(|e| format!("Failed to upload tag '{e}'"))?;
+
+        link_image_tag(&mut **db, &uuid, &tag)
+            .await
+            .map_err(|e| format!("Failed to upload image_tag for image with uuid '{e}'"))?;
     }
 
     Ok(String::from("Successfully uploaded images and tags"))

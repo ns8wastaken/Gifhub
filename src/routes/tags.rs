@@ -1,9 +1,15 @@
 use rocket::serde::{Deserialize, json::Json};
 use rocket_db_pools::Connection;
 
-use crate::{db::gallery_db::GalleryDb, sql_exec_map_err};
-use crate::db::schema::{ADD_IMAGE_TAG, ADD_TAG, DELETE_IMAGE_TAGS, QUERY_IMAGE_FOR_TAGS};
+use crate::db::gallery_db::GalleryDb;
+use crate::db::schema::{
+    remove_image_tags,
+    add_tag,
+    link_image_tag,
+    get_tags_for_image,
+};
 
+// TODO: just use a string and stop being stupid
 #[derive(Deserialize)]
 pub struct TagUpdate {
     tags: Vec<String>,
@@ -11,30 +17,20 @@ pub struct TagUpdate {
 
 #[patch("/<uuid>/tags", format = "json", data = "<form>")]
 pub async fn edit_tags(mut db: Connection<GalleryDb>, uuid: &str, form: Json<TagUpdate>) -> Result<String, String> {
-    sql_exec_map_err!(
-        db,
-        DELETE_IMAGE_TAGS,
-        "Failed to clear old tags",
-        uuid
-    )?;
+    remove_image_tags(&mut **db, uuid)
+        .await
+        .map_err(|e| format!("Failed to clear old tags: {e}"))?;
 
     for tag_value in &form.tags {
         // Ensure the tag exists in the 'tags' table
-        sql_exec_map_err!(
-            db,
-            ADD_TAG,
-            "Failed to ensure tag exists",
-            tag_value
-        )?;
+        add_tag(&mut **db, tag_value)
+            .await
+            .map_err(|e| format!("Failed to ensure tag exists: {e}"))?;
 
         // Link this image to that tag in 'image_tags'
-        sql_exec_map_err!(
-            db,
-            ADD_IMAGE_TAG,
-            "Failed to link tag to image",
-            uuid,
-            tag_value
-        )?;
+        link_image_tag(&mut **db, uuid, tag_value)
+            .await
+            .map_err(|e| format!("Failed to link tag to image: {e}"))?;
     }
 
     Ok(format!("Successfully updated tags for {}", uuid))
@@ -42,13 +38,11 @@ pub async fn edit_tags(mut db: Connection<GalleryDb>, uuid: &str, form: Json<Tag
 
 #[get("/<uuid>/tags")]
 pub async fn get_tags(mut db: Connection<GalleryDb>, uuid: &str) -> Result<Json<Vec<String>>, String> {
-    let result: (Option<String>,) = sqlx::query_as(QUERY_IMAGE_FOR_TAGS)
-        .bind(uuid)
-        .fetch_one(&mut **db)
+    let result = get_tags_for_image(&mut **db, uuid)
         .await
-        .map_err(|e| format!("Failed to query tags: {}", e))?;
+        .map_err(|e| format!("Failed to query tags: {e}"))?;
 
-    let tags_vec = result.0
+    let tags_vec = result
         .map(|s| s.split(',').map(|tag| tag.to_string()).collect())
         .unwrap_or_default();
 

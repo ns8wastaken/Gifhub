@@ -1,10 +1,10 @@
 use rocket::serde::json::Json;
 use rocket::State;
 use rocket_db_pools::Connection;
-use dyn_fmt::AsStrFormatExt;
 
+use crate::db::models::DbQueryImageUUID;
 use crate::{AppConfig, GalleryDb};
-use crate::db::{schema::QUERY_IMAGE_BY_TAGS, models::DbQueryImageUUID};
+use crate::db::schema::get_images_by_tags;
 
 #[get("/images")]
 pub fn images(config: &State<AppConfig>) -> Json<Vec<String>> {
@@ -31,14 +31,9 @@ pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<
         })
         .collect();
 
-    let count = tags.len() as i64;
-    let query = QUERY_IMAGE_BY_TAGS.format([&tags.join(",")]);
-
-    let results: Vec<DbQueryImageUUID> = sqlx::query_as(&query)
-        .bind(count)
-        .fetch_all(&mut **db)
+    let results = get_images_by_tags(&mut **db, tags)
         .await
-        .map_err(|e| format!("Failed to query database: {}", e))?;
+        .map_err(|e| format!("Failed to query database: {e}"))?;
 
     Ok(Json(results))
 }

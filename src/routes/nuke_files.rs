@@ -1,21 +1,21 @@
 use rocket_db_pools::Connection;
 use rocket::State;
 
-use crate::{db::gallery_db::GalleryDb, sql_exec_map_err};
-use crate::db::schema::*;
+use crate::{db::gallery_db::GalleryDb};
+use crate::db::schema::{nuke_db, init_db};
 use crate::AppConfig;
 
 #[post("/nuke-files")]
 pub async fn nuke(config: &State<AppConfig>, mut db: Connection<GalleryDb>) -> Result<String, String> {
     // Nuke db
-    sql_exec_map_err!(db, DROP_DB_IMAGE_TAGS, "Failed to drop 'image_tags'")?;
-    sql_exec_map_err!(db, DROP_DB_IMAGES,     "Failed to drop 'images'")?;
-    sql_exec_map_err!(db, DROP_DB_TAGS,       "Failed to drop 'tags'")?;
+    nuke_db(&mut **db)
+        .await
+        .map_err(|e| format!("Failed to nuke db: {e}"))?;
 
     // Init db
-    sql_exec_map_err!(db, INIT_DB_TAGS,       "Failed to create 'tags'")?;
-    sql_exec_map_err!(db, INIT_DB_IMAGES,     "Failed to create 'images'")?;
-    sql_exec_map_err!(db, INIT_DB_IMAGE_TAGS, "Failed to create 'image_tags'")?;
+    init_db(&mut **db)
+        .await
+        .map_err(|e| format!("Failed to recreate tables: {e}"))?;
 
     // Remove all images
     let iter = std::fs::read_dir(&config.gallery_path)
