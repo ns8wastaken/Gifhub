@@ -4,28 +4,54 @@ mod routes;
 mod db;
 mod macros;
 
-use db::gallery_db::{GalleryDb, init_db};
+use std::path::PathBuf;
 use rocket_db_pools::Database;
 use routes::{upload, search, delete, nuke_files, tags};
 use rocket::fs::{relative, FileServer};
 use rocket::fairing::AdHoc;
+use rocket::figment::value::{Map, Value};
+use db::gallery_db::{GalleryDb, init_db};
+
+pub struct AppConfig {
+    pub gallery_path: PathBuf,
+    pub db_path: PathBuf,
+}
 
 #[launch]
 async fn rocket() -> _ {
+    let config = AppConfig {
+        gallery_path: PathBuf::from("./data/storage"),
+        db_path: PathBuf::from("./data/db"),
+    };
+
+    assert!(config.gallery_path.extension().is_none());
+    assert!(config.db_path.extension().is_none());
+
     // Create gallery and db dirs
-    std::fs::create_dir_all("gallery")
+    std::fs::create_dir_all(&config.gallery_path)
         .expect("Could not create gallery directory");
-    std::fs::create_dir_all("db")
+    std::fs::create_dir_all(&config.db_path)
         .expect("Could not create db directory");
 
     // Create db file
+    let full_db_path = config.db_path.join("gallery.sqlite");
     std::fs::OpenOptions::new()
         .write(true)
         .create(true)
-        .open("db/gallery.sqlite")
-        .expect("Could not create the database at 'db/gallery.sqlite'");
+        .open(&full_db_path)
+        .expect(&format!("Could not create the database at '{}'", full_db_path.to_string_lossy()));
 
-    rocket::build()
+    let mut db_config: Map<String, Value> = Map::new();
+    db_config.insert(
+        String::from("url"),
+        Value::from(full_db_path.to_string_lossy().to_string())
+    );
+
+    // Add db path to Rocket
+    let figment = rocket::Config::figment()
+        .merge(("databases.gallery_db", db_config));
+
+    rocket::custom(figment)
         .attach(GalleryDb::init())
         .attach(AdHoc::on_ignite("Init DB", init_db))
         .mount("/", FileServer::from(relative!("public")).rank(1)) // html
@@ -35,7 +61,8 @@ async fn rocket() -> _ {
             search::search_db, // querying for images
             nuke_files::nuke   // deletes db + images
         ])
-        .mount("/gallery", FileServer::from(relative!("gallery"))) // getting individual images
+        .mount("/gallery", FileServer::from(&config.gallery_path)) // getting individual images
         .mount("/gallery", routes![delete::delete_image]) // delete an image
         .mount("/gallery", routes![tags::edit_tags, tags::get_tags]) // edit/get the tags of an image
+        .manage(config)
 }

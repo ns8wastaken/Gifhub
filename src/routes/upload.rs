@@ -1,9 +1,10 @@
+use rocket::State;
 use rocket::form::Form;
 use rocket::fs::TempFile;
 use rocket_db_pools::Connection;
 use uuid::Uuid;
 
-use crate::{sql_exec_map_err, GalleryDb};
+use crate::{AppConfig, sql_exec_map_err, GalleryDb};
 use crate::db::schema::{ADD_IMAGE, ADD_TAG, ADD_IMAGE_TAG};
 
 #[derive(FromForm)]
@@ -13,9 +14,9 @@ pub struct UploadForm<'a> {
 }
 
 #[post("/upload", data = "<form>")]
-pub async fn file(mut form: Form<UploadForm<'_>>, mut db: Connection<GalleryDb>) -> Result<String, String> {
+pub async fn file(config: &State<AppConfig>, mut form: Form<UploadForm<'_>>, mut db: Connection<GalleryDb>) -> Result<String, String> {
     let uuid = Uuid::new_v4().to_string();
-    let new_filepath = format!("gallery/{}", uuid);
+    let new_filepath = config.gallery_path.join(&uuid);
 
     if let Err(e) = form.file.copy_to(&new_filepath).await {
         return Err(format!("Failed to save the file: {}", e));

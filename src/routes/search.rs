@@ -1,16 +1,16 @@
 use rocket::serde::json::Json;
+use rocket::State;
 use rocket_db_pools::Connection;
 use dyn_fmt::AsStrFormatExt;
 
-use crate::GalleryDb;
+use crate::{AppConfig, GalleryDb};
 use crate::db::{schema::QUERY_IMAGE_BY_TAGS, models::DbQueryImageUUID};
 
 #[get("/images")]
-pub fn images() -> Json<Vec<String>> {
-    let image_dir = "gallery/";
+pub fn images(config: &State<AppConfig>) -> Json<Vec<String>> {
     let mut files: Vec<String> = Vec::new();
 
-    if let Ok(entries) = std::fs::read_dir(image_dir) {
+    if let Ok(entries) = std::fs::read_dir(&config.gallery_path) {
         for entry in entries.flatten() {
             if let Some(name) = entry.file_name().to_str() {
                 files.push(name.to_string());
@@ -23,15 +23,13 @@ pub fn images() -> Json<Vec<String>> {
 
 #[get("/search?<q>")]
 pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<Vec<DbQueryImageUUID>>, String> {
-    let tags = q
+    let tags: Vec<String> = q
         .split(',')
         .filter_map(|t| {
             let t = t.trim();
-            (!t.is_empty()).then(|| {
-                format!("'{}'", t)
-            })
+            (!t.is_empty()).then(|| format!("'{}'", t))
         })
-        .collect::<Vec<String>>();
+        .collect();
 
     let count = tags.len() as i64;
     let query = QUERY_IMAGE_BY_TAGS.format([&tags.join(",")]);

@@ -1,4 +1,3 @@
 target/
-public/*.js
-gallery/*
-db/*
+public/dist/*
+data/

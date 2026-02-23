@@ -1,8 +1,5 @@
 use rocket::{Build, Rocket};
-use rocket_db_pools::{
-    sqlx::{Executor, SqlitePool},
-    Database
-};
+use rocket_db_pools::{sqlx::{Executor, SqlitePool}, Database};
 
 use crate::db::schema::{
     INIT_DB_IMAGES,
