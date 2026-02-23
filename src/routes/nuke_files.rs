@@ -18,25 +18,10 @@ pub async fn nuke(config: &State<AppConfig>, mut db: Connection<GalleryDb>) -> R
         .map_err(|e| format!("Failed to recreate tables: {e}"))?;
 
     // Remove all images
-    let iter = std::fs::read_dir(&config.gallery_path)
-        .map_err(|e| format!(
-            "Failed to read '{}' directory: {}",
-            config.gallery_path.to_string_lossy(),
-            e
-        ))?;
-
-    for entry in iter {
-        let path = entry
-            .map_err(|e| format!("Failed to access directory entry: {}", e))?
-            .path();
-
-        std::fs::remove_file(&path)
-            .map_err(|e| format!(
-                "Insufficient permissions to delete '{}': {}",
-                path.to_string_lossy(),
-                e
-            ))?;
-    }
+    std::fs::remove_dir_all(&config.gallery_path)
+        .map_err(|e| format!("Failed to remove gallery directory: {e}"))?;
+    std::fs::create_dir(&config.gallery_path)
+        .map_err(|e| format!("Failed to recreate gallery directory: {e}"))?;
 
     Ok(String::from("Successfully reset the gallery"))
 }
