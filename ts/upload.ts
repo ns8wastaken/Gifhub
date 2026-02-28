@@ -1,3 +1,4 @@
+import { Api } from './api.js';
 import { updateGallery } from './gallery.js';
 
 export async function initUploadForm() {
@@ -12,16 +13,13 @@ export async function initUploadForm() {
         }
     });
 
-    form?.addEventListener("submit", async (event) => {
+    form?.addEventListener("submit", async (event: SubmitEvent) => {
         event.preventDefault();
 
         if (status) status.style.color = "var(--neutral)";
         if (status) status.textContent = "Uploading...";
 
-        const response = await fetch("/upload", {
-            method: "POST",
-            body: new FormData(form)
-        });
+        const response = await Api.upload(form);
 
         if (status) status.textContent = await response.text();
 

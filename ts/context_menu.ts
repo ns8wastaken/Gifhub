@@ -7,7 +7,7 @@ export function initContextMenu() {
     let currentImage: HTMLImageElement | null = null;
 
     // Show / hide menu
-    gallery?.addEventListener("contextmenu", (event) => {
+    gallery?.addEventListener("contextmenu", (event: PointerEvent) => {
         event.preventDefault();
 
         const target = (event.target as HTMLElement)
@@ -42,7 +42,7 @@ export function initContextMenu() {
         }
     });
 
-    menu?.addEventListener("click", async (event) => {
+    menu?.addEventListener("click", async (event: PointerEvent) => {
         const target = event.target as HTMLElement;
         const action = target.dataset.action;
 

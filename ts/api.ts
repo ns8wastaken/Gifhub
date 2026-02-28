@@ -1,9 +1,17 @@
 import { GifhubImage } from "./types.js";
 
 export const Api = {
+    // POST an image
+    async upload(form: HTMLFormElement): Promise<Response> {
+        return fetch("/upload", {
+            method: "POST",
+            body: new FormData(form)
+        });
+    },
+
     // GET all images
     async fetchImages(): Promise<GifhubImage[]> {
-        const res = await fetch("/gallery");
+        const res = await fetch("/gallery/images");
         if (!res.ok) throw new Error("Failed to load gallery");
         return res.json();
     },

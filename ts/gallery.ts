@@ -1,9 +1,9 @@
+import { Api } from "./api.js";
 import { GifhubImage } from "./types.js"
 
 export async function updateGallery() {
     try {
-        const res = await fetch("/gallery/images");
-        const images = await res.json();
+        let images = await Api.fetchImages();
         renderImages(images);
     } catch (err) {
         console.error("Failed to load gallery:", err);

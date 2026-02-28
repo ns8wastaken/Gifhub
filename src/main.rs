@@ -17,6 +17,11 @@ pub struct AppConfig {
     pub db_path: PathBuf,
 }
 
+#[catch(413)]
+pub fn payload_too_large() -> &'static str {
+    "File too large (10MB max)"
+}
+
 #[launch]
 async fn rocket() -> _ {
     let config = AppConfig {
@@ -47,15 +52,19 @@ async fn rocket() -> _ {
         Value::from(full_db_path.to_string_lossy().to_string())
     );
 
-    // Add db path to Rocket
+    // Setup config
     let figment = rocket::Config::figment()
-        .merge(("databases.gifhub_db", db_config));
+        .merge(("databases.gifhub_db", db_config))
+        // Unlimited file size uploads
+        .merge(("limits.file", u64::MAX))
+        .merge(("limits.data-form", u64::MAX));
 
     let migration_fairing = AdHoc::try_on_ignite("SQLx Migrations", run_migrations);
 
     rocket::custom(figment)
         .attach(GifhubDb::init())
         .attach(migration_fairing)
+        .register("/", catchers![payload_too_large])
         .mount("/", FileServer::from(relative!("public")).rank(1)) // html
         .mount("/", routes![upload::file]) // uploading image
         .mount("/api", routes![

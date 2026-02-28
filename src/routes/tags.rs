@@ -37,7 +37,10 @@ pub async fn edit_tags(
 }
 
 #[get("/<uuid>/tags")]
-pub async fn get_tags(mut conn: Connection<GifhubDb>, uuid: &str) -> Result<Json<Vec<String>>, ApiError> {
+pub async fn get_tags(
+    mut conn: Connection<GifhubDb>,
+    uuid: &str
+) -> Result<Json<Vec<String>>, ApiError> {
     let result = Repository::new(&mut conn)
         .get_tags_for_image(uuid)
         .await?;

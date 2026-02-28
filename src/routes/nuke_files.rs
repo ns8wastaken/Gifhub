@@ -1,4 +1,3 @@
-use rocket_db_pools::Connection;
 use rocket::State;
 use sqlx::Acquire;
 
@@ -10,12 +9,14 @@ use crate::AppConfig;
 #[post("/nuke-files")]
 pub async fn nuke(
     config: &State<AppConfig>,
-    mut conn: Connection<GifhubDb>,
     pool: &State<GifhubDb>
 ) -> Result<String, ApiError> {
+    let mut conn = pool.acquire().await?;
     let mut tx = conn.begin().await?;
     Repository::new(&mut *tx).nuke().await?;
     tx.commit().await?;
+
+    drop(conn);
 
     sqlx::migrate!("./migrations")
         .run(&***pool)

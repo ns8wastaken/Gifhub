@@ -14,7 +14,7 @@ pub const DROP_DB_IMAGE_TAGS: &str = r#"
 "#;
 
 pub const DROP_MIGRATIONS: &str = r#"
-    DROP TABLE IF EXISTS _sql_migrations;
+    DROP TABLE IF EXISTS _sqlx_migrations;
 "#;
 
 
