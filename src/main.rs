@@ -2,6 +2,7 @@
 
 mod routes;
 mod db;
+mod errors;
 
 use std::path::PathBuf;
 use rocket_db_pools::Database;
@@ -9,7 +10,7 @@ use routes::{upload, search, delete, nuke_files, tags};
 use rocket::fs::{relative, FileServer};
 use rocket::fairing::AdHoc;
 use rocket::figment::value::{Map, Value};
-use db::gallery_db::{GalleryDb, run_migrations};
+use db::gifhub_db::{GifhubDb, run_migrations};
 
 pub struct AppConfig {
     pub gallery_path: PathBuf,
@@ -48,12 +49,12 @@ async fn rocket() -> _ {
 
     // Add db path to Rocket
     let figment = rocket::Config::figment()
-        .merge(("databases.gallery_db", db_config));
+        .merge(("databases.gifhub_db", db_config));
 
     let migration_fairing = AdHoc::try_on_ignite("SQLx Migrations", run_migrations);
 
     rocket::custom(figment)
-        .attach(GalleryDb::init())
+        .attach(GifhubDb::init())
         .attach(migration_fairing)
         .mount("/", FileServer::from(relative!("public")).rank(1)) // html
         .mount("/", routes![upload::file]) // uploading image
@@ -63,7 +64,10 @@ async fn rocket() -> _ {
             nuke_files::nuke   // deletes db + images
         ])
         .mount("/gallery", FileServer::from(&config.gallery_path)) // getting individual images
-        .mount("/gallery", routes![delete::delete_image]) // delete an image
-        .mount("/gallery", routes![tags::edit_tags, tags::get_tags]) // edit/get the tags of an image
+        .mount("/gallery", routes![
+            delete::delete_image,
+            tags::edit_tags,
+            tags::get_tags
+        ])
         .manage(config)
 }

@@ -5,8 +5,9 @@ use rocket_db_pools::Connection;
 use sqlx::Acquire;
 use uuid::Uuid;
 
-use crate::{AppConfig, GalleryDb};
-use crate::db::schema::{add_image, add_tag, link_image_tag};
+use crate::errors::ApiError;
+use crate::{AppConfig, GifhubDb};
+use crate::db::repository::Repository;
 
 #[derive(FromForm)]
 pub struct UploadForm<'a> {
@@ -15,39 +16,33 @@ pub struct UploadForm<'a> {
 }
 
 #[post("/upload", data = "<form>")]
-pub async fn file(config: &State<AppConfig>, mut form: Form<UploadForm<'_>>, mut db: Connection<GalleryDb>) -> Result<String, String> {
+pub async fn file(
+    config: &State<AppConfig>,
+    mut form: Form<UploadForm<'_>>,
+    mut conn: Connection<GifhubDb>
+) -> Result<String, ApiError> {
     let uuid = Uuid::new_v4().to_string();
     let new_filepath = config.gallery_path.join(&uuid);
 
     if let Err(e) = form.file.copy_to(&new_filepath).await {
-        return Err(format!("Failed to save the file: {}", e));
+        return Err(ApiError::FileWrite(e));
     }
 
-    let mut tx = db
-        .begin()
-        .await
-        .map_err(|e| format!("Could not begin transaction: {e}"))?;
+    let mut tx = conn.begin().await?;
 
-    add_image(&mut *tx, &uuid)
-        .await
-        .map_err(|e| format!("Failed to upload image with uuid '{e}'"))?;
+    let mut repo = Repository::new(&mut *tx);
+
+    repo.add_image(&uuid).await?;
 
     for tag in form.tags.split(',') {
         let tag = tag.trim().to_lowercase();
 
-        add_tag(&mut *tx, &tag)
-            .await
-            .map_err(|e| format!("Failed to upload tag '{e}'"))?;
+        repo.add_tag(&tag).await?;
 
-        link_image_tag(&mut *tx, &uuid, &tag)
-            .await
-            .map_err(|e| format!("Failed to upload image_tag for image with uuid '{e}'"))?;
+        repo.link_image_tag(&uuid, &tag).await?;
     }
 
-    tx
-        .commit()
-        .await
-        .map_err(|e| format!("Could not commit transaction: {e}"))?;
+    tx.commit().await?;
 
     Ok(String::from("Successfully uploaded images and tags"))
 }

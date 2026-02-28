@@ -3,8 +3,9 @@ use rocket::State;
 use rocket_db_pools::Connection;
 
 use crate::db::models::DbQueryImageUUID;
-use crate::{AppConfig, GalleryDb};
-use crate::db::schema::get_images_by_tags;
+use crate::errors::ApiError;
+use crate::{AppConfig, GifhubDb};
+use crate::db::repository::Repository;
 
 #[get("/images")]
 pub fn images(config: &State<AppConfig>) -> Json<Vec<String>> {
@@ -22,7 +23,7 @@ pub fn images(config: &State<AppConfig>) -> Json<Vec<String>> {
 }
 
 #[get("/search?<q>")]
-pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<Vec<DbQueryImageUUID>>, String> {
+pub async fn search_db(mut conn: Connection<GifhubDb>, q: String) -> Result<Json<Vec<DbQueryImageUUID>>, ApiError> {
     let tags: Vec<String> = q
         .split(',')
         .filter_map(|t| {
@@ -31,9 +32,9 @@ pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<
         })
         .collect();
 
-    let results = get_images_by_tags(&mut db, tags)
-        .await
-        .map_err(|e| format!("Failed to query database: {e}"))?;
+    let res = Repository::new(&mut conn)
+        .get_images_by_tags(tags)
+        .await?;
 
-    Ok(Json(results))
+    Ok(Json(res))
 }

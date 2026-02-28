@@ -2,13 +2,9 @@ use rocket::serde::{Deserialize, json::Json};
 use rocket_db_pools::Connection;
 use sqlx::Acquire;
 
-use crate::db::gallery_db::GalleryDb;
-use crate::db::schema::{
-    remove_image_tags,
-    add_tag,
-    link_image_tag,
-    get_tags_for_image,
-};
+use crate::db::gifhub_db::GifhubDb;
+use crate::db::repository::Repository;
+use crate::errors::ApiError;
 
 // TODO: just use a string and stop being stupid
 #[derive(Deserialize)]
@@ -17,41 +13,31 @@ pub struct TagUpdate {
 }
 
 #[patch("/<uuid>/tags", format = "json", data = "<form>")]
-pub async fn edit_tags(mut db: Connection<GalleryDb>, uuid: &str, form: Json<TagUpdate>) -> Result<String, String> {
-    let mut tx = db
-        .begin()
-        .await
-        .map_err(|e| format!("Could not begin transaction: {e}"))?;
+pub async fn edit_tags(mut conn: Connection<GifhubDb>, uuid: &str, form: Json<TagUpdate>) -> Result<String, ApiError> {
+    let mut tx = conn.begin().await?;
 
-    remove_image_tags(&mut *tx, uuid)
-        .await
-        .map_err(|e| format!("Failed to clear old tags: {e}"))?;
+    let mut repo = Repository::new(&mut *tx);
+
+    repo.remove_image_tags(uuid).await?;
 
     for tag_value in &form.tags {
         // Ensure the tag exists in the 'tags' table
-        add_tag(&mut *tx, tag_value)
-            .await
-            .map_err(|e| format!("Failed to ensure tag exists: {e}"))?;
+        repo.add_tag(tag_value).await?;
 
         // Link this image to that tag in 'image_tags'
-        link_image_tag(&mut *tx, uuid, tag_value)
-            .await
-            .map_err(|e| format!("Failed to link tag to image: {e}"))?;
+        repo.link_image_tag(uuid, tag_value).await?
     }
 
-    tx
-        .commit()
-        .await
-        .map_err(|e| format!("Could not commit transaction: {e}"))?;
+    tx.commit().await?;
 
     Ok(format!("Successfully updated tags for {}", uuid))
 }
 
 #[get("/<uuid>/tags")]
-pub async fn get_tags(mut db: Connection<GalleryDb>, uuid: &str) -> Result<Json<Vec<String>>, String> {
-    let result = get_tags_for_image(&mut **db, uuid)
-        .await
-        .map_err(|e| format!("Failed to query tags: {e}"))?;
+pub async fn get_tags(mut conn: Connection<GifhubDb>, uuid: &str) -> Result<Json<Vec<String>>, ApiError> {
+    let result = Repository::new(&mut conn)
+        .get_tags_for_image(uuid)
+        .await?;
 
     let tags_vec = result
         .map(|s| s.split(',').map(|tag| tag.to_string()).collect())

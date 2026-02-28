@@ -2,37 +2,24 @@ use rocket_db_pools::Connection;
 use rocket::State;
 use sqlx::Acquire;
 
-use crate::{db::gallery_db::GalleryDb};
-use crate::db::schema::{nuke_db, init_db};
+use crate::errors::ApiError;
+use crate::GifhubDb;
+use crate::db::repository::Repository;
 use crate::AppConfig;
 
 #[post("/nuke-files")]
-pub async fn nuke(config: &State<AppConfig>, mut db: Connection<GalleryDb>) -> Result<String, String> {
-    let mut tx = db
-        .begin()
-        .await
-        .map_err(|e| format!("Could not begin transaction: {e}"))?;
+pub async fn nuke(config: &State<AppConfig>, mut conn: Connection<GifhubDb>) -> Result<String, ApiError> {
+    let mut tx = conn.begin().await?;
 
-    // Nuke db
-    nuke_db(&mut *tx)
-        .await
-        .map_err(|e| format!("Failed to nuke db: {e}"))?;
+    let mut repo = Repository::new(&mut *tx);
 
-    // Init db
-    init_db(&mut *tx)
-        .await
-        .map_err(|e| format!("Failed to recreate tables: {e}"))?;
+    repo.nuke().await?;
+    repo.init().await?;
 
-    tx
-        .commit()
-        .await
-        .map_err(|e| format!("Could not commit transaction: {e}"))?;
+    tx.commit().await?;
 
-    // Remove all images
-    std::fs::remove_dir_all(&config.gallery_path)
-        .map_err(|e| format!("Failed to remove gallery directory: {e}"))?;
-    std::fs::create_dir(&config.gallery_path)
-        .map_err(|e| format!("Failed to recreate gallery directory: {e}"))?;
+    std::fs::remove_dir_all(&config.gallery_path)?;
+    std::fs::create_dir(&config.gallery_path)?;
 
     Ok(String::from("Successfully reset the gallery"))
 }
