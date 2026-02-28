@@ -10,16 +10,16 @@ use crate::AppConfig;
 #[post("/nuke-files")]
 pub async fn nuke(
     config: &State<AppConfig>,
-    mut conn: Connection<GifhubDb>
+    mut conn: Connection<GifhubDb>,
+    pool: &State<GifhubDb>
 ) -> Result<String, ApiError> {
     let mut tx = conn.begin().await?;
-
-    let mut repo = Repository::new(&mut *tx);
-
-    repo.nuke().await?;
-    repo.init().await?;
-
+    Repository::new(&mut *tx).nuke().await?;
     tx.commit().await?;
+
+    sqlx::migrate!("./migrations")
+        .run(&***pool)
+        .await?;
 
     std::fs::remove_dir_all(&config.gallery_path)?;
     std::fs::create_dir(&config.gallery_path)?;

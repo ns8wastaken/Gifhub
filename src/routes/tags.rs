@@ -13,7 +13,10 @@ pub struct TagUpdate {
 }
 
 #[patch("/<uuid>/tags", format = "json", data = "<form>")]
-pub async fn edit_tags(mut conn: Connection<GifhubDb>, uuid: &str, form: Json<TagUpdate>) -> Result<String, ApiError> {
+pub async fn edit_tags(
+    mut conn: Connection<GifhubDb>,
+    uuid: &str, form: Json<TagUpdate>
+) -> Result<String, ApiError> {
     let mut tx = conn.begin().await?;
 
     let mut repo = Repository::new(&mut *tx);

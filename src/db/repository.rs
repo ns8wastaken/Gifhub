@@ -13,14 +13,7 @@ impl<'a> Repository<'a> {
         Self { conn }
     }
 
-    pub async fn init(&mut self) -> Result<(), sqlx::Error> {
-        sqlx::query(INIT_DB_IMAGES).execute(&mut *self.conn).await?;
-        sqlx::query(INIT_DB_TAGS).execute(&mut *self.conn).await?;
-        sqlx::query(INIT_DB_IMAGE_TAGS).execute(&mut *self.conn).await?;
-        Ok(())
-    }
-
-    pub async fn nuke(&mut self) -> Result<(), sqlx::Error> {
+    pub async fn nuke(&mut self) -> Result<(), DbError> {
         sqlx::query(DROP_DB_IMAGE_TAGS).execute(&mut *self.conn).await?;
         sqlx::query(DROP_DB_TAGS).execute(&mut *self.conn).await?;
         sqlx::query(DROP_DB_IMAGES).execute(&mut *self.conn).await?;
@@ -84,7 +77,7 @@ impl<'a> Repository<'a> {
     pub async fn get_tags_for_image(
         &mut self,
         uuid: &str
-    ) -> Result<Option<String>, sqlx::Error> {
+    ) -> Result<Option<String>, DbError> {
         let row = sqlx::query(QUERY_IMAGE_FOR_TAGS)
             .bind(uuid)
             .fetch_optional(&mut *self.conn)
@@ -93,7 +86,7 @@ impl<'a> Repository<'a> {
         Ok(row.map(|r| r.get("tags")))
     }
 
-    pub async fn remove_image(&mut self, uuid: &str) -> Result<(), sqlx::Error> {
+    pub async fn remove_image(&mut self, uuid: &str) -> Result<(), DbError> {
         // NOTE: Using ON DELETE CASCADE makes this delete from `image_tags` as well
         sqlx::query(REMOVE_IMAGE)
             .bind(uuid)
@@ -102,7 +95,7 @@ impl<'a> Repository<'a> {
         Ok(())
     }
 
-    pub async fn remove_image_tags(&mut self, uuid: &str) -> Result<(), sqlx::Error> {
+    pub async fn remove_image_tags(&mut self, uuid: &str) -> Result<(), DbError> {
         // NOTE: Using ON DELETE CASCADE makes this delete from `image_tags` as well
         sqlx::query(DELETE_IMAGE_TAGS)
             .bind(uuid)

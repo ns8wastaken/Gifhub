@@ -23,7 +23,10 @@ pub fn images(config: &State<AppConfig>) -> Json<Vec<String>> {
 }
 
 #[get("/search?<q>")]
-pub async fn search_db(mut conn: Connection<GifhubDb>, q: String) -> Result<Json<Vec<DbQueryImageUUID>>, ApiError> {
+pub async fn search_db(
+    mut conn: Connection<GifhubDb>,
+    q: String
+) -> Result<Json<Vec<DbQueryImageUUID>>, ApiError> {
     let tags: Vec<String> = q
         .split(',')
         .filter_map(|t| {

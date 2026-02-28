@@ -1,33 +1,4 @@
 /*
-* INITIALIZATION
-*/
-pub const INIT_DB_TAGS: &str = r#"
-    CREATE TABLE IF NOT EXISTS tags (
-        id    INTEGER PRIMARY KEY AUTOINCREMENT,
-        value TEXT UNIQUE NOT NULL
-    );
-"#;
-
-pub const INIT_DB_IMAGES: &str = r#"
-    CREATE TABLE IF NOT EXISTS images (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        uuid       TEXT UNIQUE NOT NULL,
-        date_added DATETIME NOT NULL DEFAULT (datetime('now', 'localtime'))
-    );
-"#;
-
-pub const INIT_DB_IMAGE_TAGS: &str = r#"
-    CREATE TABLE IF NOT EXISTS image_tags (
-        image_id INTEGER,
-        tag_id   INTEGER,
-        PRIMARY KEY (image_id, tag_id),
-        FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
-        FOREIGN KEY (tag_id)   REFERENCES tags(id)   ON DELETE CASCADE
-    );
-"#;
-
-
-/*
 * DROPPING
 */
 pub const DROP_DB_IMAGES: &str = r#"

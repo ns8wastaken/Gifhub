@@ -38,3 +38,9 @@ impl From<sqlx::Error> for ApiError {
         ApiError::Database(DbError::Sqlx(e))
     }
 }
+
+impl From<sqlx::migrate::MigrateError> for ApiError {
+    fn from(e: sqlx::migrate::MigrateError) -> Self {
+        ApiError::Database(DbError::Migration(e))
+    }
+}

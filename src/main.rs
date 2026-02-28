@@ -6,10 +6,10 @@ mod errors;
 
 use std::path::PathBuf;
 use rocket_db_pools::Database;
-use routes::{upload, search, delete, nuke_files, tags};
 use rocket::fs::{relative, FileServer};
 use rocket::fairing::AdHoc;
 use rocket::figment::value::{Map, Value};
+use routes::{upload, search, delete, nuke_files, tags};
 use db::gifhub_db::{GifhubDb, run_migrations};
 
 pub struct AppConfig {
