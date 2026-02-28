@@ -164,26 +164,21 @@ pub async fn get_images_by_tags(
     if tags.is_empty() { return Ok(vec![]); }
 
     let count = tags.len();
-    // Create placeholders: $1, $2, $3...
+
     let placeholders = (1..=count)
-        .map(|i| format!("${}", i))
+        .map(|i| format!("${}", i + 1))
         .collect::<Vec<_>>()
         .join(",");
 
-    // Replace the {} in your SQL constant
     let query_str = QUERY_IMAGE_BY_TAGS.replace("{}", &placeholders);
 
-    // Use query_as to map rows directly to your struct
     let mut query = sqlx::query_as::<_, DbQueryImageUUID>(&query_str);
 
-    // Bind all the tags
+    query = query.bind(count as i32);
+
     for tag in &tags {
         query = query.bind(tag);
     }
-
-    // Bind the final $n placeholder for the HAVING clause
-    // This will be $(count + 1)
-    query = query.bind(count as i32);
 
     query.fetch_all(conn).await
 }

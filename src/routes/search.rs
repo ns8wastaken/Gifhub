@@ -27,11 +27,11 @@ pub async fn search_db(mut db: Connection<GalleryDb>, q: String) -> Result<Json<
         .split(',')
         .filter_map(|t| {
             let t = t.trim();
-            (!t.is_empty()).then(|| format!("'{}'", t))
+            (!t.is_empty()).then(|| format!("{}", t))
         })
         .collect();
 
-    let results = get_images_by_tags(&mut **db, tags)
+    let results = get_images_by_tags(&mut db, tags)
         .await
         .map_err(|e| format!("Failed to query database: {e}"))?;
 

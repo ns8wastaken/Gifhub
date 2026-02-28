@@ -1,5 +1,6 @@
 use rocket::serde::{Deserialize, json::Json};
 use rocket_db_pools::Connection;
+use sqlx::Acquire;
 
 use crate::db::gallery_db::GalleryDb;
 use crate::db::schema::{
@@ -17,21 +18,31 @@ pub struct TagUpdate {
 
 #[patch("/<uuid>/tags", format = "json", data = "<form>")]
 pub async fn edit_tags(mut db: Connection<GalleryDb>, uuid: &str, form: Json<TagUpdate>) -> Result<String, String> {
-    remove_image_tags(&mut **db, uuid)
+    let mut tx = db
+        .begin()
+        .await
+        .map_err(|e| format!("Could not begin transaction: {e}"))?;
+
+    remove_image_tags(&mut *tx, uuid)
         .await
         .map_err(|e| format!("Failed to clear old tags: {e}"))?;
 
     for tag_value in &form.tags {
         // Ensure the tag exists in the 'tags' table
-        add_tag(&mut **db, tag_value)
+        add_tag(&mut *tx, tag_value)
             .await
             .map_err(|e| format!("Failed to ensure tag exists: {e}"))?;
 
         // Link this image to that tag in 'image_tags'
-        link_image_tag(&mut **db, uuid, tag_value)
+        link_image_tag(&mut *tx, uuid, tag_value)
             .await
             .map_err(|e| format!("Failed to link tag to image: {e}"))?;
     }
+
+    tx
+        .commit()
+        .await
+        .map_err(|e| format!("Could not commit transaction: {e}"))?;
 
     Ok(format!("Successfully updated tags for {}", uuid))
 }

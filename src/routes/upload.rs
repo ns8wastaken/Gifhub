@@ -2,6 +2,7 @@ use rocket::State;
 use rocket::form::Form;
 use rocket::fs::TempFile;
 use rocket_db_pools::Connection;
+use sqlx::Acquire;
 use uuid::Uuid;
 
 use crate::{AppConfig, GalleryDb};
@@ -22,21 +23,31 @@ pub async fn file(config: &State<AppConfig>, mut form: Form<UploadForm<'_>>, mut
         return Err(format!("Failed to save the file: {}", e));
     }
 
-    add_image(&mut **db, &uuid)
+    let mut tx = db
+        .begin()
+        .await
+        .map_err(|e| format!("Could not begin transaction: {e}"))?;
+
+    add_image(&mut *tx, &uuid)
         .await
         .map_err(|e| format!("Failed to upload image with uuid '{e}'"))?;
 
     for tag in form.tags.split(',') {
         let tag = tag.trim().to_lowercase();
 
-        add_tag(&mut **db, &tag)
+        add_tag(&mut *tx, &tag)
             .await
             .map_err(|e| format!("Failed to upload tag '{e}'"))?;
 
-        link_image_tag(&mut **db, &uuid, &tag)
+        link_image_tag(&mut *tx, &uuid, &tag)
             .await
             .map_err(|e| format!("Failed to upload image_tag for image with uuid '{e}'"))?;
     }
+
+    tx
+        .commit()
+        .await
+        .map_err(|e| format!("Could not commit transaction: {e}"))?;
 
     Ok(String::from("Successfully uploaded images and tags"))
 }
