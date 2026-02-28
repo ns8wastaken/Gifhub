@@ -2,7 +2,7 @@ import { GifhubImage } from "./types.js"
 
 export async function updateGallery() {
     try {
-        const res = await fetch("/api/images");
+        const res = await fetch("/gallery/images");
         const images = await res.json();
         renderImages(images);
     } catch (err) {
@@ -29,7 +29,7 @@ export function renderImages(images: GifhubImage[]) {
 export async function searchImages(query: string) {
     if (!query) return updateGallery();
     try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/gallery/search?q=${encodeURIComponent(query)}`);
         const images = await res.json();
         renderImages(images);
     } catch (err) {

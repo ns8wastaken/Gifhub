@@ -8,7 +8,10 @@ use crate::db::repository::Repository;
 use crate::AppConfig;
 
 #[post("/nuke-files")]
-pub async fn nuke(config: &State<AppConfig>, mut conn: Connection<GifhubDb>) -> Result<String, ApiError> {
+pub async fn nuke(
+    config: &State<AppConfig>,
+    mut conn: Connection<GifhubDb>
+) -> Result<String, ApiError> {
     let mut tx = conn.begin().await?;
 
     let mut repo = Repository::new(&mut *tx);

@@ -59,12 +59,12 @@ async fn rocket() -> _ {
         .mount("/", FileServer::from(relative!("public")).rank(1)) // html
         .mount("/", routes![upload::file]) // uploading image
         .mount("/api", routes![
-            search::images,    // getting a list of all images
-            search::search_db, // querying for images
-            nuke_files::nuke   // deletes db + images
+            nuke_files::nuke  // deletes db + images
         ])
         .mount("/gallery", FileServer::from(&config.gallery_path)) // getting individual images
         .mount("/gallery", routes![
+            search::images,  // get a list of all images
+            search::search_db,
             delete::delete_image,
             tags::edit_tags,
             tags::get_tags
