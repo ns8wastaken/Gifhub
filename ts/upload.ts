@@ -1,34 +1,36 @@
-import { Api } from './api.js';
-import { updateGallery } from './gallery.js';
+import { Ids } from "./ids.js";
+import { UploadModal } from "./upload_modal.js";
 
-export async function initUploadForm() {
-    const uploadButton = document.getElementById("file-input") as HTMLInputElement | null;
-    const form = document.getElementById("upload-form") as HTMLFormElement | null;
-    const status = document.getElementById("status") as HTMLParagraphElement | null;
+export function initUploads() {
+    const uploader = new UploadModal();
 
-    uploadButton?.addEventListener("change", () => {
-        if (uploadButton.files?.length === 1) {
-            if (status) status.textContent = `Selected: ${uploadButton.files[0].name}`;
-            if (status) status.style.color = "var(--neutral)";
+    const overlay = document.getElementById(Ids.dropOverlay)!;
+    let dragCounter = 0;
+
+    document.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        dragCounter++;
+        overlay.classList.add("visible");
+    });
+
+    document.addEventListener("dragleave", () => {
+        dragCounter--;
+        if (dragCounter <= 0) {
+            dragCounter = 0;
+            overlay.classList.remove("visible");
         }
     });
 
-    form?.addEventListener("submit", async (event: SubmitEvent) => {
-        event.preventDefault();
+    document.addEventListener("dragover", (e) => e.preventDefault());
 
-        if (status) status.style.color = "var(--neutral)";
-        if (status) status.textContent = "Uploading...";
+    document.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dragCounter = 0;
+        overlay.classList.remove("visible");
 
-        const response = await Api.upload(form);
-
-        if (status) status.textContent = await response.text();
-
-        if (response.ok) {
-            if (status) status.style.color = "var(--success)";
-            form.reset();
-            updateGallery();
-        } else {
-            if (status) status.style.color = "var(--success)";
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
+            uploader.openModal(files[0]);
         }
     });
 }

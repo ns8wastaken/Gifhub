@@ -12,7 +12,7 @@ use crate::db::repository::Repository;
 #[derive(FromForm)]
 pub struct UploadForm<'a> {
     pub file: TempFile<'a>,
-    pub tags: String,
+    pub tags: Vec<String>,
 }
 
 #[post("/upload", data = "<form>")]
@@ -34,11 +34,11 @@ pub async fn file(
 
     repo.add_image(&uuid).await?;
 
-    for tag in form.tags.split(',') {
+    for tag in &form.tags {
         let tag = tag.trim().to_lowercase();
+        if tag.is_empty() { continue; }
 
         repo.add_tag(&tag).await?;
-
         repo.link_image_tag(&uuid, &tag).await?;
     }
 

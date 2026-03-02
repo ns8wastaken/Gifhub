@@ -25,8 +25,8 @@ pub fn payload_too_large() -> &'static str {
 #[launch]
 async fn rocket() -> _ {
     let config = AppConfig {
-        gallery_path: PathBuf::from("./data/storage"),
-        db_path: PathBuf::from("./data/db"),
+        gallery_path: PathBuf::from("./gifhub-data/storage"),
+        db_path: PathBuf::from("./gifhub-data/db"),
     };
 
     assert!(config.gallery_path.extension().is_none());
@@ -70,12 +70,13 @@ async fn rocket() -> _ {
         .mount("/api", routes![
             nuke_files::nuke  // deletes db + images
         ])
-        .mount("/gallery", FileServer::from(&config.gallery_path)) // getting individual images
+        .mount("/gallery", FileServer::from(&config.gallery_path))
         .mount("/gallery", routes![
             search::images,  // get a list of all images
             search::search_db,
             delete::delete_image,
             tags::edit_tags,
+            tags::get_all_tags,
             tags::get_tags
         ])
         .manage(config)

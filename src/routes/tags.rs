@@ -3,6 +3,7 @@ use rocket_db_pools::Connection;
 use sqlx::Acquire;
 
 use crate::db::gifhub_db::GifhubDb;
+use crate::db::models::TagItem;
 use crate::db::repository::Repository;
 use crate::errors::ApiError;
 
@@ -34,6 +35,17 @@ pub async fn edit_tags(
     tx.commit().await?;
 
     Ok(format!("Successfully updated tags for {}", uuid))
+}
+
+#[get("/tags")]
+pub async fn get_all_tags(
+    mut conn: Connection<GifhubDb>
+) -> Result<Json<Vec<TagItem>>, ApiError> {
+    let tags = Repository::new(&mut conn)
+        .get_all_tags()
+        .await?;
+
+    Ok(Json(tags))
 }
 
 #[get("/<uuid>/tags")]

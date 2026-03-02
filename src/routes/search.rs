@@ -1,25 +1,18 @@
 use rocket::serde::json::Json;
-use rocket::State;
 use rocket_db_pools::Connection;
 
-use crate::db::models::DbQueryImageUUID;
+use crate::db::models::{DbQueryImage, DbQueryImageUUID};
 use crate::errors::ApiError;
-use crate::{AppConfig, GifhubDb};
+use crate::GifhubDb;
 use crate::db::repository::Repository;
 
 #[get("/images")]
-pub fn images(config: &State<AppConfig>) -> Json<Vec<String>> {
-    let mut files: Vec<String> = Vec::new();
+pub async fn images(mut conn: Connection<GifhubDb>) -> Result<Json<Vec<DbQueryImage>>, ApiError> {
+    let images = Repository::new(&mut conn)
+        .get_all_images()
+        .await?;
 
-    if let Ok(entries) = std::fs::read_dir(&config.gallery_path) {
-        for entry in entries.flatten() {
-            if let Some(name) = entry.file_name().to_str() {
-                files.push(name.to_string());
-            }
-        }
-    }
-
-    Json(files)
+    Ok(Json(images))
 }
 
 #[get("/search?<q>")]

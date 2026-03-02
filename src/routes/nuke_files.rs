@@ -15,8 +15,7 @@ pub async fn nuke(
     let mut tx = conn.begin().await?;
     Repository::new(&mut *tx).nuke().await?;
     tx.commit().await?;
-
-    drop(conn);
+    conn.close().await?;
 
     sqlx::migrate!("./migrations")
         .run(&***pool)

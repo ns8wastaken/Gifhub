@@ -1,25 +1,32 @@
-import { GifhubImage } from "./types.js";
+import { GifhubImage, TagItem } from "./types.js";
 
 export const Api = {
     // POST an image
-    async upload(form: HTMLFormElement): Promise<Response> {
-        return fetch("/upload", {
+    async upload(formData: FormData): Promise<Response> {
+        return await fetch("/upload", {
             method: "POST",
-            body: new FormData(form)
+            body: formData
         });
     },
 
     // GET all images
-    async fetchImages(): Promise<GifhubImage[]> {
+    async getAllImages(): Promise<GifhubImage[]> {
         const res = await fetch("/gallery/images");
-        if (!res.ok) throw new Error("Failed to load gallery");
+        if (!res.ok) throw new Error("Failed to get images");
+        return res.json();
+    },
+
+    // GET all tags and the number of times they appear
+    async getAllTags(): Promise<TagItem[]> {
+        const res = await fetch("/gallery/tags");
+        if (!res.ok) throw new Error("Failed to get tags");
         return res.json();
     },
 
     // GET image's tags
-    async fetchTags(uuid: string): Promise<string[]> {
+    async getTags(uuid: string): Promise<string[]> {
         const res = await fetch(`/gallery/${uuid}/tags`);
-        if (!res.ok) throw new Error("Failed to load gallery");
+        if (!res.ok) throw new Error("Failed to get image's tags");
         return res.json();
     },
 

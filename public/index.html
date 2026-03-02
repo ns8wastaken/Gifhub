@@ -7,71 +7,60 @@
         <link rel="stylesheet" href="styles.css">
     </head>
     <body>
-        <button id="nuke-btn" class="btn-danger-fixed">Nuke Gallery</button>
+        <div id="app">
+            <!-- Titlebar -->
+            <div id="titlebar">
+                <label for="file-input">+ add</label>
+                <input id="file-input" type="file" accept="image/*,.gif" required style="display:none">
+                <span class="title">GIFHUB</span>
+            </div>
 
-        <header>
-            <h1>Gif<span>hub</span></h1>
-        </header>
-
-        <main>
-            <section class="card">
-                <legend>Upload New GIF</legend>
-                <form id="upload-form">
-                    <div class="upload-row">
-                        <input type="file" name="file" id="file-input" required hidden>
-                        <label for="file-input" class="btn-secondary">Choose File</label>
-
-                        <input type="text" name="tags" id="tags-input" placeholder="Tags (e.g. pet, dog, ball)" required>
-
-                        <button type="submit" id="file-upload" class="btn-primary">Upload</button>
+            <!-- Sidebar -->
+            <div id="sidebar">
+                <div id="sidebar-header">Tags</div>
+                <div id="tag-list">
+                    <div class="tag-item active" id="all-item" data-tag="">
+                        <span class="tag-name">all</span>
+                        <span class="tag-count" id="all-count">0</span>
                     </div>
-                    <p id="status"></p>
-                </form>
-            </section>
-
-            <section class="card">
-                <legend>Search Gallery</legend>
-                <form id="search-form">
-                    <input type="text" id="search-input" placeholder="Search tags...">
-                </form>
-            </section>
-
-            <div class="gallery" id="gallery">
                 </div>
-        </main>
+            </div>
 
-        <div id="context-menu" class="context-menu">
-            <ul>
-                <li data-action="edit-tags">Edit tags</li>
-                <li data-action="delete" class="danger">Remove image</li>
-            </ul>
-        </div>
-
-        <div id="custom-modal-container" class="modal-backdrop" style="display: none;">
-            <div class="modal-card">
-                <h3 id="modal-title"></h3>
-                <p id="modal-message"></p>
-                <div class="modal-actions">
-                    <button id="modal-cancel" class="btn-secondary">Cancel</button>
-                    <button id="modal-confirm" class="btn-primary">Confirm</button>
+            <!-- Main -->
+            <div id="main">
+                <div id="toolbar">
+                    <input id="search" type="text" placeholder="search by name…">
+                    <span id="count">0 items</span>
                 </div>
+                <div id="grid"></div>
             </div>
         </div>
 
-        <div id="edit-modal-container" class="modal-backdrop" data-urgency="none" style="display: none;">
-            <div class="modal-card">
-                <h3>Edit Image Tags</h3>
+        <!-- Drop overlay -->
+        <div id="drop-overlay">drop files to add</div>
 
-                <img id="edit-preview-img" src="" alt="Preview">
-
-                <div class="tag-input-group">
-                    <label for="edit-tags-input">Tags (separated by commas)</label>
-                    <input type="text" id="edit-tags-input" placeholder="e.g. funny, reaction, cat">
+        <div id="modal-bg">
+            <div id="modal">
+                <div id="modal-header">
+                    <span id="modal-filename">untitled</span>
+                    <button id="modal-close">✕</button>
                 </div>
-
-                <div class="modal-actions">
-                    <button id="edit-cancel" class="btn-secondary">Cancel</button>
-                    <button id="edit-save" class="btn-primary">Save Changes</button>
+                <div id="modal-preview-wrap">
+                    <img id="modal-preview" src="" alt="preview">
+                </div>
+                <div id="modal-body">
+                    <div>
+                        <div class="section-label">tags</div>
+                        <div id="modal-tag-input-row">
+                            <input id="modal-tag-input" type="text" placeholder="add a tag…" maxlength="32" autocomplete="off" spellcheck="false">
+                            <button id="modal-tag-add-btn">+ add</button>
+                        </div>
+                    </div>
+                    <div id="modal-tag-list"></div>
+                    <div class="modal-actions">
+                        <button class="btn" id="modal-btn-cancel">cancel</button>
+                        <button class="btn primary" id="modal-btn-save">save</button>
+                    </div>
                 </div>
             </div>
         </div>

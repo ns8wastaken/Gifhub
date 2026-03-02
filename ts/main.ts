@@ -1,25 +1,9 @@
-import { updateGallery, searchImages } from "./gallery.js";
-import { initContextMenu } from "./context_menu.js";
-import { initUploadForm } from "./upload.js";
-import { initNukeButton } from "./nuke.js";
+import { initEvents } from "./events.js";
+import { initUploads } from "./upload.js";
+import { refresh } from "./render.js";
 
-function main() {
-    // Initialize modular components
-    initContextMenu();
-    initUploadForm();
-    initNukeButton();
-
-    // Handle Search
-    const searchForm = document.getElementById("search-form");
-    searchForm?.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const searchInput = document.getElementById("search-input") as HTMLInputElement;
-        const query = searchInput?.value;
-        searchImages(query);
-    });
-
-    // Initial load
-    updateGallery();
-}
-
-main();
+document.addEventListener('DOMContentLoaded', () => {
+    initEvents();
+    initUploads();
+    refresh();
+});
